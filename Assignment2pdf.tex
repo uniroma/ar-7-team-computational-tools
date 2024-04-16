@@ -1,0 +1,176 @@
+\documentclass{article}
+\usepackage{minted}
+
+\usemintedstyle{colorful}
+\title{Assignment 2}
+\begin{document}
+\maketitle
+
+\definecolor{bg}{rgb}{0.95, 0.95, 0.95}
+This document describes our process to code the conditional and unconditional likelihood functions for the AR(7) process based on the starter code provided in the assignment.
+Furthermore, it outlines our approach to estimate the AR(7) paramteres for the \texttt{INDPRO} variable from the FRED-MD dataset and our forecast.
+
+\tableofcontents
+
+\section{Conditional Likelihood}
+\subsection{Theoretical Outline}
+The AR(7) Model is defined as:
+\begin{equation}
+y_t = c + \phi_1 y_{t-1} + \phi_2 y_{t-2} + \phi_3 y_{t-3} + \phi_4 y_{t-4} + \phi_5 y_{t-5} + \phi_6 y_{t-6} + \phi_7 y_{t-7} + u_t
+\end{equation}
+where $u_t \sim N(0, \sigma^2)$.
+
+We can then define the conditional likelihood function as:
+\begin{equation}
+L(y,\phi) = f(y_1, y_2, y_3, y_4, y_5, y_6, y_7;\phi)\prod_{t=8}^Tf(y_t|y_{t-1},..., y_{t-7};\phi)
+\end{equation}
+The conditional log-likelihood function is:
+\begin{equation}
+\ell (y; \phi) = \log( f(y_1,..., y_7;\phi))+\sum_{t=8}^T \log (f(y_t|y_{t-1},..., y_{t-7};\phi))
+\end{equation}
+
+We regard the first 7 observation or their joint distribution as a determenistic quantity and thus:
+
+\begin{equation}
+\ell (y; \phi) \propto \sum_{t=8}^T \log(f(y_t|y_{t-1},..., y_{t-7};\phi))
+\end{equation}
+Also, since the error terms are normally distributed with mean 0 and varieance $\sigma^2$, we can determine the conditional distribution of $y_t$ as:
+\begin{equation}
+y_t|y_{t-1},y_{t-2}, ..., y_{t-7} \sim N(c + \phi_1y_{t-1} + ... + \phi_7 y_{t-7}, \sigma^2)
+\end{equation}
+Therefore, to implement the conditional log-likelihood function we can code it as the sum of normally distributed variables.
+
+\begin{equation}
+\ell_C (y; \phi) \propto \sum_{t=8}^T \log \left( \frac{1}{\sigma \sqrt{2\pi}} \exp \left\{-\frac{(y_t - (c+ \phi_1y_{t-1} + ... + \phi_7 y_{t-7} ))^2}{2\sigma^2} \right\} \right)
+\end{equation}
+\subsection{Implementation in Python}
+
+\begin{minted}[bgcolor=bg]{python}
+from scipy.stats import norm
+from scipy.stats import multivariate_normal
+import numpy as np
+
+def lagged_matrix(Y, max_lag=7):
+    n = len(Y)
+    lagged_matrix = np.full((n, max_lag), np.nan)    
+    # Fill each column with the appropriately lagged data
+    for lag in range(1, max_lag + 1):
+        lagged_matrix[lag:, lag - 1] = Y[:-lag]
+    return lagged_matrix
+
+
+def cond_loglikelihood_ar7(params, y):
+    c = params[0] 
+    phi = params[1:8]
+    sigma2 = params[8]
+    mu, Sigma, stationary = unconditional_ar_mean_variance(c, phi, sigma2)
+    ## We could check that at phis the process is stationary and return -Inf if it is not
+    if not(stationary):
+        return -np.inf
+    ## The distribution of 
+    # y_t|y_{t-1}, ..., y_{t-7} ~ N(c+\phi_{1}*y_{t-1}+...+\phi_{7}y_{t-7}, sigma2)
+    ## Create lagged matrix
+    X = lagged_matrix(y, 7)
+    yf = y[7:]
+    Xf = X[7:,:]
+    loglik = np.sum(norm.logpdf(yf, loc=(c + Xf@phi), scale=np.sqrt(sigma2)))
+    return loglik
+\end{minted}
+
+\section{Unconditional Likelihood}
+\subsection{Theoretical Outline}
+The unconditional likelihood function starts from a similar approach.
+However, instead of regarding the first 7 observations as determenistic it regards them as multivariate normally distributed with mean $\mu$ and covariance $\Sigma$.
+\begin{equation}
+\ell_U (y; \phi) = \log( f(y_1,..., y_7;\phi, \mu, \Sigma))+\sum_{t=8}^T \log (f(y_t|y_{t-1},..., y_{t-7};\phi))
+\end{equation}
+The second term on the right hand side is the conditional log-likelihood, the first term is the multivariate normal distribution of the first seven observations.
+
+As described in the assignment the parameters of the multivariate normal distribution can be obtained through:
+\begin{equation}
+\mu = (I - A)^{-1}b
+\end{equation}
+to compute the mean and the Lyapunov equation
+\begin{equation}
+\Sigma = A \Sigma A^T + Q
+\end{equation}
+to compute the covariance matrix of the autoregressive process.
+
+\subsection{Implementation in Python}
+First, the matrix $A$ is constructed, which is a square matrix where the first row is made up of $\phi_1, \phi_2, ..., \phi_p$ of the autoregressive process of order $p$ and the other rows are in reduced row echelon form.
+
+For this the command \mintinline{python}{np.zeros((p,p))} is used, which creates an array of dimension $p \times p$ filled with zeros. 
+Next, we replace the first row with $\phi_1, \phi_2, ..., \phi_p$ by subsetting $A$ with the command \mintinline{python}{A[0, :] = phis}.
+Next, to fill the remaining rows except the last row with leading ones the comman np.eye is used.
+
+Thus for given $p$ and vector $\phi$, this code creates the matrix $A$ and then calculates the mean and the covariance. 
+The code also checks whether the AR(7) process is stationary with respect to the given parameters.
+\begin{minted}[bgcolor=bg]{python}
+def unconditional_ar_mean_variance(c, phis, sigma2):
+    ## The length of phis is p
+    p = len(phis)
+    A = np.zeros((p, p))
+    A[0, :] = phis
+    A[1:, 0:(p-1)] = np.eye(p-1)
+    ## Check for stationarity
+    eigA = np.linalg.eig(A)
+    if all(np.abs(eigA.eigenvalues)<1):
+        stationary = True
+    else:
+        stationary = False
+    # Create the vector b
+    b = np.zeros((p, 1))
+    b[0, 0] = c
+    
+    # Compute the mean using matrix algebra
+    I = np.eye(p)
+    mu = np.linalg.inv(I - A) @ b
+    
+    # Solve the discrete Lyapunov equation
+    Q = np.zeros((p, p))
+    Q[0, 0] = sigma2
+    #Sigma = np.linalg.solve(I - np.kron(A, A), Q.flatten()).reshape(7, 7)
+    Sigma = scipy.linalg.solve_discrete_lyapunov(A, Q)
+    
+    return mu.ravel(), Sigma, stationary
+\end{minted}
+
+This function is used to build the unconditional likelihood function:
+
+\begin{minted}[bgcolor=bg]{python}
+def uncond_loglikelihood_ar7(params, y):
+    ## The unconditional loglikelihood
+    ## is the unconditional "plus" the density of the
+    ## first p (7 in our case) observations
+    cloglik = cond_loglikelihood_ar7(params, y)
+
+    ## Calculate initial
+    # y_1, ..., y_7 ~ N(mu, sigma_y)
+    c = params[0] 
+    phi = params[1:8]
+    sigma2 = params[8]
+    mu, Sigma, stationary = unconditional_ar_mean_variance(c, phi, sigma2)
+    if not(stationary):
+        return -np.inf
+    mvn = multivariate_normal(mean=mu, cov=Sigma, allow_singular=True)
+    uloglik = cloglik + mvn.logpdf(y[0:7])
+    return uloglik
+\end{minted}
+\section{Maximum Likelihood Estimation for \texttt{INDPRO}}
+As in assignment 1, we import the FRED-MD dataset using \texttt{pandas}.
+Since we are only interested in the \texttt{INDPRO} variable, we select it and transform it using log differences:
+\begin{minted}[bgcolor=bg]{python}
+import pandas as pd
+import numpy as np
+#Read Data
+df = df = pd.read_csv('~/Downloads/current.csv')
+#Select INDPRO
+INDPRO = df['INDPRO']
+#Drop first Row
+INDPRO = INDPRO.drop(index=0)
+#transform INDPRO using log differences
+INDPRO = np.log(INDPRO).diff()
+\end{minted}
+As the next step we construct the matrix containing \texttt{INDPRO} and its lagged values .
+\section{Forecast}
+\end{document}
