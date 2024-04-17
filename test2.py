@@ -38,9 +38,21 @@ print("The process is stationary:", stationary)
 print("Mean vector (mu):", mu)
 print("Variance-covariance matrix (Sigma);", Sigma)
 
+import pandas as pd
+from numpy.linalg import solve
+import numpy as np
+
+#Read Data
+df = df = pd.read_csv('C:/Users/Dell/Desktop/cours_S2/comput_tools/current_dataset.csv')
+#Select INDPRO
+INDPRO = df['INDPRO']
+#Drop first Row
+INDPRO = INDPRO.drop(index=0)
+#transform INDPRO using log differences
+INDPRO = np.log(INDPRO).diff()
+
 from scipy.stats import norm
 from scipy.stats import multivariate_normal
-import numpy as np
 
 def lagged_matrix(Y, max_lag=7):
     n = len(Y)
@@ -49,6 +61,7 @@ def lagged_matrix(Y, max_lag=7):
     for lag in range(1, max_lag + 1):
         lagged_matrix[lag:, lag - 1] = Y[:-lag]
     return lagged_matrix
+
 
 def cond_loglikelihood_ar7(params, y):
     c = params[0] 
@@ -100,3 +113,54 @@ y = np.random.normal(size=100)
 cond_loglikelihood_ar7(params, y)
 ## The unconditional distribution
 uncond_loglikelihood_ar7(params, y)
+
+## Unconditional - define the negative loglikelihood
+
+import numpy as np
+import pandas as pd
+import scipy.optimize
+
+# Read Data
+df = pd.read_csv('C:/Users/Dell/Desktop/cours_S2/comput_tools/current_dataset.csv')
+
+# Clean the data: Select INDPRO, drop first row, and transform using log differences
+INDPRO = df['INDPRO'].drop(index=0).apply(np.log).diff().dropna().values
+
+# Define function to create lagged matrix
+def lagged_matrix(Y, max_lag=7):
+    n = len(Y)
+    lagged_matrix = np.full((n, max_lag), np.nan)    
+    # Fill each column with the appropriately lagged data
+    for lag in range(1, max_lag + 1):
+        lagged_matrix[lag:, lag - 1] = Y[:-lag]
+    return lagged_matrix
+
+# Create lagged matrix for INDPRO
+X = lagged_matrix(INDPRO, 7)
+
+# Extract lagged data and add intercept column
+Xf = np.hstack((np.ones((X.shape[0] - 7, 1)), X[7:, :]))
+yf = INDPRO[7:]
+
+# Function to calculate conditional log-likelihood
+def cond_loglikelihood_ar7(params, y):
+    beta = params[:-1]
+    sigma2 = params[-1]
+    residuals = y - Xf @ beta
+    log_likelihood = -0.5 * (np.log(2 * np.pi * sigma2) + (residuals ** 2 / sigma2)).sum()
+    return -log_likelihood
+
+# Define objective function for optimization
+def cobj(params, y): 
+    return -cond_loglikelihood_ar7(params, y)
+
+# Initial parameters (beta and sigma2)
+beta_initial = np.zeros(Xf.shape[1])
+sigma2_initial = np.var(yf)
+params_initial = np.hstack((beta_initial, sigma2_initial))
+
+# Perform optimization
+results = scipy.optimize.minimize(cobj, params_initial, args=(yf,), method='L-BFGS-B')
+
+# Display results
+print("Estimated parameters:", results.x)
