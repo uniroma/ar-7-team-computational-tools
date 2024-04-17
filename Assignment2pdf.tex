@@ -2,8 +2,8 @@
 \usepackage{minted}
 \usemintedstyle{colorful}
 \usepackage{changepage}
-\usepackage{geometry}[margins = 1cm]
-%\usepackage{booktabs}
+\usepackage[margin = 1.5cm]{geometry}
+\usepackage{booktabs}
 \title{Assignment 2}
 \begin{document}
 \maketitle
@@ -287,7 +287,7 @@ print("The parameters estimated by maximizing the unconditional likelihood are:"
 \end{minted}
 As the next step we construct the matrix containing \texttt{INDPRO} and its lagged values .
 
-\subsection{Results}
+\subsection{Results: Conditional Likelihood}
 We estimate four different models for the conditional likelihood:
 \begin{enumerate}
 \item \texttt{Model 1}: We use the OLS coefficients as the initial guess and minimize the conditional likelihood function using the 'L-BFGS-B' method.
@@ -318,6 +318,50 @@ mod3 = scipy.optimize.minimize(fun = cobj, x0 =  Initial_Guess, args = INDPRO, m
 ### Nelder-Mead
 mod4 = scipy.optimize.minimize(fun = cobj, x0 =  Initial_Guess, args = INDPRO, method='Nelder-Mead').x
 
+
+
+mods = np.array([modOLS, mod1, mod2, mod3, mod4])
+modsDF = pd.DataFrame(mods)
+modsDF = modsDF.T
+rownames = ["$c$", "$\phi_1$", "$\phi_2$", "$\phi_3$", "$\phi_4$", 
+            "$\phi_5$", "$\phi_6$", "$\phi_7$", "$\sigma^2$"]
+modsDF.insert(0, "Coefficients", rownames)
+column_names = ("Coefficients", "OLS", "Model 1", "Model 2", "Model 3", "Model 4")
+modsDF.columns = column_names
+print(modsDF.to_latex())
+\end{minted}
+
+The results are displayed in Table 1.
+The results show that if the initial guess are the OLS coefficients, the conditional MLE correctly finds identical coefficients. However, when we supply a different initial guess, the minimization procedure using 'L-BFGS-B' returns simply the same initial guess while using the 'Neler-Mead' method changes the estimated coefficients quite dramatically.
+This could hint towards errors in our code, multiple local minima or a non-continuous likelihood function.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llrrrrr}
+\toprule
+ & Coefficients & OLS & Model 1 & Model 2 & Model 3 & Model 4 \\
+\midrule
+0 & $c$ & 0.001263 & 0.001263 & 0.001263 & 0.001200 & 0.000874 \\
+1 & $\phi_1$ & 0.291263 & 0.291263 & 0.291263 & 0.029100 & 0.056374 \\
+2 & $\phi_2$ & -0.074517 & -0.074517 & -0.074517 & 0.070000 & 0.017666 \\
+3 & $\phi_3$ & 0.046809 & 0.046809 & 0.046809 & 0.059000 & 0.060468 \\
+4 & $\phi_4$ & 0.047565 & 0.047565 & 0.047565 & 0.040000 & 0.009790 \\
+5 & $\phi_5$ & -0.024910 & -0.024910 & -0.024910 & 0.040000 & 0.058602 \\
+6 & $\phi_6$ & 0.061501 & 0.061501 & 0.061501 & 0.020000 & 0.038055 \\
+7 & $\phi_7$ & 0.020106 & 0.020106 & 0.020106 & 0.060000 & 0.114138 \\
+8 & $\sigma^2$ & 0.000089 & 0.000089 & 0.000089 & 0.009000 & 0.000095 \\
+\bottomrule
+\end{tabular}
+\caption{Results of the maximizing the conditional likelihood of the AR(7) process.}
+\end{table}
+\subsection{Results: Unconditional Likelihood}
+We estimate the following models for the unconditional likelihood function:
+\begin{itemize}
+\item \texttt{Model 5}: We use the OLS coefficients as the initial guess and minimize the unconditional likelihood function using the 'L-BFGS-B' method.
+\item \texttt{Model 6}: We use the OLS coefficients as the initial guess and minimize the unconditional likelihood function using the 'Neler-Mead' method.
+\end{itemize}
+
+\begin{minted}[bgcolor=bg]{python}
 ## Unbounded Unconditional Likelihood
 ## 1. Using the OLS parameters as the initial guess
 ### L-BFGS-B
@@ -334,38 +378,115 @@ Initial_Guess = np.array([
 #mod7 = scipy.optimize.minimize(fun = uobj, x0 =  Initial_Guess, args = INDPRO, method='L-BFGS-B').x
 ### Nelder-Mead
 #mod8 = scipy.optimize.minimize(fun = uobj, x0 =  Initial_Guess, args = INDPRO, method='Nelder-Mead').x
-
-mods = np.array([modOLS, mod1, mod2, mod3, mod4])
-print(mods)
-#np.savetxt("mods.txt", mods)
-modsDF = pd.DataFrame(mods)
-modsDF = modsDF.T
-print(modsDF)
-print(modsDF.to_latex())
+\end{minted}
+The results are displayed in Table 2:
+\begin{minted}[bgcolor=bg]{python}
+umods = np.array([modOLS, mod5, mod6])
+umodsDF = pd.DataFrame(umods)
+umodsDF = umodsDF.T
+rownames = ["$c$", "$\phi_1$", "$\phi_2$", "$\phi_3$", "$\phi_4$", 
+            "$\phi_5$", "$\phi_6$", "$\phi_7$", "$\sigma^2$"]
+umodsDF.insert(0, "Coefficients", rownames)
+column_names = ("Coefficients", "OLS", "Model 5", "Model 6")
+umodsDF.columns = column_names
+print(umodsDF.to_latex())
 \end{minted}
 
-The results are displayed in Table 1.
-The results show that if the initial guess are the OLS coefficients, the conditional MLE correctly finds identical coefficients. However, when we supply a different initial guess, the minimization procedure using 'L-BFGS-B' returns simply the same initial guess while using the 'Neler-Mead' method changes the estimated coefficients quite dramatically.
-This could hint towards errors in our code, multiple local minima or a non-continuous likelihood function.
-
-\begin{table}[ht]
-
-\begin{tabular}{lrrrrrrr|}
-\hline
-\multicolumn{1}{|c}{Coefficients} & OLS & \multicolumn{1}{c}{Model 1} & \multicolumn{1}{c}{Model 2} & \multicolumn{1}{c}{Model 3} & \multicolumn{1}{l|}{Model 4} \\ \hline
-\multicolumn{1}{|c|}{c}    & 0.001263 & 0.001263 & 0.001263 & 0.001200 & 0.000874 \\
-\multicolumn{1}{|c|}{$\phi_1$} & 0.291263 & 0.291263 & 0.291263 & 0.029100 & 0.056374 \\
-\multicolumn{1}{|c|}{$\phi_2$} & -0.074517 & -0.074517 & -0.074517 & 0.070000 & 0.017666 \\
-\multicolumn{1}{|c|}{$\phi_3$} & 0.046809 & 0.046809 & 0.046809 & 0.059000 & 0.060468 \\
-\multicolumn{1}{|c|}{$\phi_4$} & 0.047565 & 0.047565 & 0.047565 & 0.040000 & 0.009790 \\
-\multicolumn{1}{|c|}{$\phi_5$}& -0.024910 & -0.024910 & -0.024910 & 0.040000 & 0.058602 \\
-\multicolumn{1}{|c|}{$\phi_6$} & 0.061501 & 0.061501 & 0.061501 & 0.020000 & 0.038055 \\
-\multicolumn{1}{|c|}{$\phi_7$} & 0.020106 & 0.020106 & 0.020106 & 0.060000 & 0.114138 \\
-\multicolumn{1}{|c|}{$\sigma^2$} & 0.000089 & 0.000089 & 0.000089 & 0.009000 & 0.000095 \\
-\hline
+\begin{table}[h]
+\centering
+\begin{tabular}{llrrr}
+\toprule
+ & Coefficients & OLS & Model 5 & Model 6 \\
+\midrule
+0 & $c$ & 0.001263 & 0.001263 & 0.001277 \\
+1 & $\phi_1$ & 0.291263 & 0.291263 & 0.309304 \\
+2 & $\phi_2$ & -0.074517 & -0.074517 & -0.076766 \\
+3 & $\phi_3$ & 0.046809 & 0.046809 & 0.040008 \\
+4 & $\phi_4$ & 0.047565 & 0.047565 & 0.038904 \\
+5 & $\phi_5$ & -0.024910 & -0.024910 & -0.031723 \\
+6 & $\phi_6$ & 0.061501 & 0.061501 & 0.056227 \\
+7 & $\phi_7$ & 0.020106 & 0.020106 & 0.020665 \\
+8 & $\sigma^2$ & 0.000089 & 0.000091 & 0.000091 \\
+\bottomrule
 \end{tabular}
-\caption{Estimation results for MLE using the conditional likelihood function. Colums OLS reports the OLS coefficients.}
+\caption{Results of the maximizing the unconditional likelihood of the AR(7) process.}
+\end{table}
+\section{Forecast}
+We use the estimated parameters to generate forecasts for \texttt{INDPRO} eight periods ahead.
+For this purpose we define a function, which takes the forecast horizon and the estimated model parameters as inputs, using the aforementioned eight periods and the OLS coefficients as defaults.
+
+\begin{minted}[bgcolor=bg]{python}
+### Forecasting:
+def forecastAR(h=8, model = mods[0]): # defaults: h is the forecasting horizon, mods[0] the OLS model
+    forecastArray = np.empty(h) # Empty array to store forecasts
+    lastrow = np.array(INDPRO.tail(7)) #use last 7 rows of INDPRO for the first forecast
+    lastrow = np.flip(lastrow) # invert array to align with order of estimated parameters in the model
+    for i in range(1, h+1):
+        forecast = model[0] + model[1:8] @ lastrow # mods[0] uses the OLS estimates
+        lastrow = np.insert(lastrow, 0, forecast)
+        lastrow = np.delete(lastrow, -1)
+        forecastArray[i-1] = forecast
+
+    return forecastArray
+\end{minted}
+\subsection{Forecast: Conditional Likelihood}
+Again we display the results in a Table.
+\begin{minted}[bgcolor=bg]{python}
+rownames = ("$y_{t+1}$", "$y_{t+2}$", "$y_{t+3}$", "$y_{t+4}$",
+            "$y_{t+5}$","$y_{t+6}$", "$y_{t+7}$", "$y_{t+8}$")
+results = {'Forecasts': rownames,'OLS': forecastAR(), 'Model 1': forecastAR(model = mods[1]),
+           'Model 2': forecastAR(model = mods[2]),'Model 3': forecastAR(model = mods[3]),
+           'Model 4': forecastAR(model = mods[4])}
+results = pd.DataFrame(results)
+
+print(results.to_latex())
+\end{minted}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llrrrrr}
+\toprule
+ & Forecasts & OLS & Model 1 & Model 2 & Model 3 & Model 4 \\
+\midrule
+0 & $y_{t+1}$ & 0.000840 & 0.000840 & 0.000840 & 0.001561 & 0.001931 \\
+1 & $y_{t+2}$ & 0.001962 & 0.001962 & 0.001962 & 0.000944 & 0.000468 \\
+2 & $y_{t+3}$ & 0.001172 & 0.001172 & 0.001172 & 0.001290 & 0.000843 \\
+3 & $y_{t+4}$ & 0.001467 & 0.001467 & 0.001467 & 0.000927 & 0.000218 \\
+4 & $y_{t+5}$ & 0.001817 & 0.001817 & 0.001817 & 0.001572 & 0.001225 \\
+5 & $y_{t+6}$ & 0.001751 & 0.001751 & 0.001751 & 0.001468 & 0.001080 \\
+6 & $y_{t+7}$ & 0.001745 & 0.001745 & 0.001745 & 0.001471 & 0.000970 \\
+7 & $y_{t+8}$ & 0.001904 & 0.001904 & 0.001904 & 0.001640 & 0.001311 \\
+\bottomrule
+\end{tabular}
+\caption{Forecasts using the estimated coefficients of the OLS model and and the conditional likelihood models.}
 \end{table}
 
-\section{Forecast}
+\subsection{Forecast: Unconditional Likelihood}
+\begin{minted}[bgcolor=bg]{python}
+rownames = ("$y_{t+1}$", "$y_{t+2}$", "$y_{t+3}$", "$y_{t+4}$",
+            "$y_{t+5}$","$y_{t+6}$", "$y_{t+7}$", "$y_{t+8}$")
+results = {'Forecasts': rownames,'OLS': forecastAR(), 'Model 5': forecastAR(model = umods[1]),
+           'Model 6': forecastAR(model = umods[2])}
+results = pd.DataFrame(results)
+
+print(results.to_latex())
+\end{minted}
+\begin{table}[h]
+\centering
+\begin{tabular}{llrrr}
+\toprule
+ & Forecasts & OLS & Model 5 & Model 6 \\
+\midrule
+0 & $y_{t+1}$ & 0.000840 & 0.000840 & 0.000890 \\
+1 & $y_{t+2}$ & 0.001962 & 0.001962 & 0.002034 \\
+2 & $y_{t+3}$ & 0.001172 & 0.001172 & 0.001268 \\
+3 & $y_{t+4}$ & 0.001467 & 0.001467 & 0.001507 \\
+4 & $y_{t+5}$ & 0.001817 & 0.001817 & 0.001852 \\
+5 & $y_{t+6}$ & 0.001751 & 0.001751 & 0.001782 \\
+6 & $y_{t+7}$ & 0.001745 & 0.001745 & 0.001761 \\
+7 & $y_{t+8}$ & 0.001904 & 0.001904 & 0.001910 \\
+\bottomrule
+\end{tabular}
+\caption{Forecasts using the estimated coefficients of the OLS model and and the unconditional likelihood models.}
+\end{table}
 \end{document}

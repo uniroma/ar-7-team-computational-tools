@@ -99,12 +99,6 @@ params= np.hstack((beta, sigma2_hat))
 print("The parameters of the OLS model are", params)
 
 # to maximize likelihood a function of the negative likelihood is defined to be minimized
-params = np.array([
-    0.0012, ## c
-    0.0291, 0.07, 0.059, 0.04, 0.04, 0.02, 0.06, ## phi
-    0.008 ## sigma2    
-    ])
-
 def cobj(params, y): 
     return - cond_loglikelihood_ar7(params,y)
 
@@ -113,8 +107,6 @@ results = scipy.optimize.minimize(fun = cobj, x0 =  params, args = INDPRO, metho
 print("The parameters estimated by maximizing the conditional likelihood are:", results.x)
 
 #Same Procedure for unconditional likelihood
-params= np.hstack((beta, sigma2_hat))
-
 def uobj(params, y): 
     return - uncond_loglikelihood_ar7(params,y)
 
@@ -141,6 +133,17 @@ mod3 = scipy.optimize.minimize(fun = cobj, x0 =  Initial_Guess, args = INDPRO, m
 ### Nelder-Mead
 mod4 = scipy.optimize.minimize(fun = cobj, x0 =  Initial_Guess, args = INDPRO, method='Nelder-Mead').x
 
+
+mods = np.array([modOLS, mod1, mod2, mod3, mod4])
+modsDF = pd.DataFrame(mods)
+modsDF = modsDF.T
+rownames = ["$c$", "$\phi_1$", "$\phi_2$", "$\phi_3$", "$\phi_4$", 
+            "$\phi_5$", "$\phi_6$", "$\phi_7$", "$\sigma^2$"]
+modsDF.insert(0, "Coefficients", rownames)
+column_names = ("Coefficients", "OLS", "Model 1", "Model 2", "Model 3", "Model 4")
+modsDF.columns = column_names
+#print(modsDF.to_latex())
+
 ## Unbounded Unconditional Likelihood
 ## 1. Using the OLS parameters as the initial guess
 ### L-BFGS-B
@@ -158,10 +161,42 @@ Initial_Guess = np.array([
 ### Nelder-Mead
 #mod8 = scipy.optimize.minimize(fun = uobj, x0 =  Initial_Guess, args = INDPRO, method='Nelder-Mead').x
 
-mods = np.array([modOLS, mod1, mod2, mod3, mod4])
-print(mods)
-#np.savetxt("mods.txt", mods)
-modsDF = pd.DataFrame(mods)
-modsDF = modsDF.T
-print(modsDF)
-print(modsDF.to_latex())
+umods = np.array([modOLS, mod5, mod6])
+umodsDF = pd.DataFrame(umods)
+umodsDF = umodsDF.T
+rownames = ["$c$", "$\phi_1$", "$\phi_2$", "$\phi_3$", "$\phi_4$", 
+            "$\phi_5$", "$\phi_6$", "$\phi_7$", "$\sigma^2$"]
+umodsDF.insert(0, "Coefficients", rownames)
+column_names = ("Coefficients", "OLS", "Model 5", "Model 6")
+umodsDF.columns = column_names
+#print(umodsDF.to_latex())
+
+### Forecasting:
+def forecastAR(h=8, model = mods[0]): # defaults: h is the forecasting horizon, mods[0] the OLS model
+    forecastArray = np.empty(h) # Empty array to store forecasts
+    lastrow = np.array(INDPRO.tail(7)) #use last 7 rows of INDPRO for the first forecast
+    lastrow = np.flip(lastrow) # invert array to align with order of estimated parameters in the model
+    for i in range(1, h+1):
+        forecast = model[0] + model[1:8] @ lastrow # mods[0] uses the OLS estimates
+        lastrow = np.insert(lastrow, 0, forecast)
+        lastrow = np.delete(lastrow, -1)
+        forecastArray[i-1] = forecast
+
+    return forecastArray
+
+rownames = ("$y_{t+1}$", "$y_{t+2}$", "$y_{t+3}$", "$y_{t+4}$",
+            "$y_{t+5}$","$y_{t+6}$", "$y_{t+7}$", "$y_{t+8}$")
+results = {'Forecasts': rownames,'OLS': forecastAR(), 'Model 1': forecastAR(model = mods[1]),
+           'Model 2': forecastAR(model = mods[2]),'Model 3': forecastAR(model = mods[3]),
+           'Model 4': forecastAR(model = mods[4])}
+results = pd.DataFrame(results)
+
+#print(results.to_latex())
+
+rownames = ("$y_{t+1}$", "$y_{t+2}$", "$y_{t+3}$", "$y_{t+4}$",
+            "$y_{t+5}$","$y_{t+6}$", "$y_{t+7}$", "$y_{t+8}$")
+results = {'Forecasts': rownames,'OLS': forecastAR(), 'Model 5': forecastAR(model = umods[1]),
+           'Model 6': forecastAR(model = umods[2])}
+results = pd.DataFrame(results)
+
+print(results.to_latex())
