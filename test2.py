@@ -1,4 +1,32 @@
+from scipy.stats import norm
+from scipy.stats import multivariate_normal
 import numpy as np
+
+def lagged_matrix(Y, max_lag=7):
+    n = len(Y)
+    lagged_matrix = np.full((n, max_lag), np.nan)    
+    # Fill each column with the appropriately lagged data
+    for lag in range(1, max_lag + 1):
+        lagged_matrix[lag:, lag - 1] = Y[:-lag]
+    return lagged_matrix
+
+def cond_loglikelihood_ar7(params, y):
+    c = params[0] 
+    phi = params[1:8]
+    sigma2 = params[8]
+    mu, Sigma, stationary = unconditional_ar_mean_variance(c, phi, sigma2)
+    ## We could check that at phis the process is stationary and return -Inf if it is not
+    if not(stationary):
+        return -np.inf
+    ## The distribution of 
+    # y_t|y_{t-1}, ..., y_{t-7} ~ N(c+\phi_{1}*y_{t-1}+...+\phi_{7}y_{t-7}, sigma2)
+    ## Create lagged matrix
+    X = lagged_matrix(y, 7)
+    yf = y[7:]
+    Xf = X[7:,:]
+    loglik = np.sum(norm.logpdf(yf, loc=(c + Xf@phi), scale=np.sqrt(sigma2)))
+    return loglik
+
 import scipy 
 
 def unconditional_ar_mean_variance(c, phis, sigma2):
@@ -38,48 +66,6 @@ print("The process is stationary:", stationary)
 print("Mean vector (mu):", mu)
 print("Variance-covariance matrix (Sigma);", Sigma)
 
-import pandas as pd
-from numpy.linalg import solve
-import numpy as np
-
-#Read Data
-df = df = pd.read_csv('C:/Users/Dell/Desktop/cours_S2/comput_tools/current_dataset.csv')
-#Select INDPRO
-INDPRO = df['INDPRO']
-#Drop first Row
-INDPRO = INDPRO.drop(index=0)
-#transform INDPRO using log differences
-INDPRO = np.log(INDPRO).diff()
-
-from scipy.stats import norm
-from scipy.stats import multivariate_normal
-
-def lagged_matrix(Y, max_lag=7):
-    n = len(Y)
-    lagged_matrix = np.full((n, max_lag), np.nan)    
-    # Fill each column with the appropriately lagged data
-    for lag in range(1, max_lag + 1):
-        lagged_matrix[lag:, lag - 1] = Y[:-lag]
-    return lagged_matrix
-
-
-def cond_loglikelihood_ar7(params, y):
-    c = params[0] 
-    phi = params[1:8]
-    sigma2 = params[8]
-    mu, Sigma, stationary = unconditional_ar_mean_variance(c, phi, sigma2)
-    ## We could check that at phis the process is stationary and return -Inf if it is not
-    if not(stationary):
-        return -np.inf
-    ## The distribution of 
-    # y_t|y_{t-1}, ..., y_{t-7} ~ N(c+\phi_{1}*y_{t-1}+...+\phi_{7}y_{t-7}, sigma2)
-    ## Create lagged matrix
-    X = lagged_matrix(y, 7)
-    yf = y[7:]
-    Xf = X[7:,:]
-    loglik = np.sum(norm.logpdf(yf, loc=(c + Xf@phi), scale=np.sqrt(sigma2)))
-    return loglik
-
 def uncond_loglikelihood_ar7(params, y):
     ## The unconditional loglikelihood
     ## is the unconditional "plus" the density of the
@@ -98,69 +84,50 @@ def uncond_loglikelihood_ar7(params, y):
     uloglik = cloglik + mvn.logpdf(y[0:7])
     return uloglik
     
-
-## Example
-params = np.array([
-    0.0, ## c
-    0.2, -0.1, 0.05, -0.05, 0.02, -0.02, 0.01, ## phi
-    1.0 ## sigma2    
-    ])
-
-## Fake data
-y = np.random.normal(size=100)
-
-## The conditional distribution
-cond_loglikelihood_ar7(params, y)
-## The unconditional distribution
-uncond_loglikelihood_ar7(params, y)
-
-## Unconditional - define the negative loglikelihood
-
-import numpy as np
 import pandas as pd
-import scipy.optimize
 
-# Read Data
-df = pd.read_csv('C:/Users/Dell/Desktop/cours_S2/comput_tools/current_dataset.csv')
+#Read Data
+df = df = pd.read_csv('C:/Users/Dell/Desktop/cours_S2/comput_tools/current_dataset.csv')
+#Select INDPRO
+INDPRO = df['INDPRO']
+#Drop first Row
+INDPRO = INDPRO.drop(index=0)
+#transform INDPRO using log differences
+INDPRO = np.log(INDPRO).diff()
 
-# Clean the data: Select INDPRO, drop first row, and transform using log differences
-INDPRO = df['INDPRO'].drop(index=0).apply(np.log).diff().dropna().values
+# FRED DATA : 
+y = df['INDPRO'] 
 
-# Define function to create lagged matrix
-def lagged_matrix(Y, max_lag=7):
-    n = len(Y)
-    lagged_matrix = np.full((n, max_lag), np.nan)    
-    # Fill each column with the appropriately lagged data
-    for lag in range(1, max_lag + 1):
-        lagged_matrix[lag:, lag - 1] = Y[:-lag]
-    return lagged_matrix
+    # Computing OLS
+X = lagged_matrix(y, 7)
+yf = y[7:]
+Xf = np.hstack((np.ones((len(y) - 7, 1)), X[7:, :]))
+beta = np.linalg.solve(Xf.T @ Xf, Xf.T @ yf)
+sigma2_hat = np.mean((yf - Xf @ beta) ** 2)
+params = np.hstack((beta, sigma2_hat))
+print("The parameters of the OLS model are", params)
 
-# Create lagged matrix for INDPRO
-X = lagged_matrix(INDPRO, 7)
-
-# Extract lagged data and add intercept column
-Xf = np.hstack((np.ones((X.shape[0] - 7, 1)), X[7:, :]))
-yf = INDPRO[7:]
-
-# Function to calculate conditional log-likelihood
-def cond_loglikelihood_ar7(params, y):
-    beta = params[:-1]
-    sigma2 = params[-1]
-    residuals = y - Xf @ beta
-    log_likelihood = -0.5 * (np.log(2 * np.pi * sigma2) + (residuals ** 2 / sigma2)).sum()
-    return -log_likelihood
-
-# Define objective function for optimization
-def cobj(params, y): 
+# Defining the function to minimize for maximizing likelihood
+def cobj(params, y):
     return -cond_loglikelihood_ar7(params, y)
 
-# Initial parameters (beta and sigma2)
-beta_initial = np.zeros(Xf.shape[1])
-sigma2_initial = np.var(yf)
-params_initial = np.hstack((beta_initial, sigma2_initial))
+# Maximizing the likelihood
+results = scipy.optimize.minimize(fun=cobj, x0=params, args=y, method='L-BFGS-B')
+print("The parameters estimated by maximizing the conditional likelihood are:", results.x)
 
-# Perform optimization
-results = scipy.optimize.minimize(cobj, params_initial, args=(yf,), method='L-BFGS-B')
+#The results are the same as the OLS parameters. 
 
-# Display results
-print("Estimated parameters:", results.x)
+# Defining the function to minimize for maximizing likelihood
+def uobj(params, y): 
+    return - uncond_loglikelihood_ar7(params,y)
+
+bounds_constant = tuple((-np.inf, np.inf) for _ in range(1))
+bounds_phi = tuple((-1, 1) for _ in range(7))
+bounds_sigma = tuple((0,np.inf) for _ in range(1))
+bounds = bounds_constant + bounds_phi + bounds_sigma
+
+## L-BFGS-B support bounds
+results = scipy.optimize.minimize(uobj, results.x, args = y, method='L-BFGS-B', bounds = bounds)
+print("The parameters estimated by maximizing the unconditional likelihood are:", results.x)
+
+
