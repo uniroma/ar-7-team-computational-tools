@@ -7,7 +7,7 @@ def lagged_matrix(Y, max_lag=7):
     lagged_matrix = np.full((n, max_lag), np.nan)    
     # Fill each column with the appropriately lagged data
     for lag in range(1, max_lag + 1):
-        lagged_matrix[lag:, lag - 1] = Y[:-lag]
+        lagged_matrix[lag:, lag - 1] = Y[:-lag] if lag > 1 else Y[:-1]
     return lagged_matrix
 
 def cond_loglikelihood_ar7(params, y):
@@ -95,28 +95,26 @@ INDPRO = INDPRO.drop(index=0)
 #transform INDPRO using log differences
 INDPRO = np.log(INDPRO).diff()
 
-# FRED DATA : 
-y = df['INDPRO'] 
 
-# Computing OLS
-X = lagged_matrix(y, 7)
-yf = y[7:]
-Xf = np.hstack((np.ones((len(yf), 1)), X[7:, :]))  # Ensure the number of rows matches yf
-beta = np.linalg.solve(Xf.T @ Xf, Xf.T @ yf)
-sigma2_hat = np.mean((yf - Xf @ beta) ** 2)
-params = np.hstack((beta, sigma2_hat))
+X = lagged_matrix(INDPRO, 7)
+yf = INDPRO[7:]
+Xf = np.hstack((np.ones((len(INDPRO)-7,1)), X[7:,:]))
+beta = np.linalg.solve(Xf.T@Xf, Xf.T@yf)
+sigma2_hat = np.mean((yf - Xf@beta)**2)
+params= np.hstack((beta, sigma2_hat))
 print("The parameters of the OLS model are", params)
 
+
 # Defining the function to minimize for maximizing likelihood
-def cobj(params, y):
-    return -cond_loglikelihood_ar7(params, y)
+def cobj(params, yf):
+    return -cond_loglikelihood_ar7(params, yf)
 
 # Maximizing the likelihood
-results = scipy.optimize.minimize(fun=cobj, x0=params, args=y, method='L-BFGS-B')
+results = scipy.optimize.minimize(fun=cobj, x0=params, args=yf, method='L-BFGS-B')
 print("The parameters estimated by maximizing the conditional likelihood are:", results.x)
 
 # Forecasting using OLS parameters
-def forecast_ols(params, y, horizon=7):
+def forecast_ols(params, yf, horizon=7):
     # Extract parameters
     beta = params[:-1]
     sigma2 = params[-1]
@@ -129,13 +127,13 @@ def forecast_ols(params, y, horizon=7):
     forecast = X_forecast @ beta
     return forecast
 
-ols_forecast = forecast_ols(params, y, horizon=7)
+ols_forecast = forecast_ols(params, yf, horizon=7)
 print("Forecast using OLS parameters:", ols_forecast)
 
 
 # Defining the function to minimize for maximizing likelihood
-def uobj(params, y): 
-    return - uncond_loglikelihood_ar7(params,y)
+def uobj(params, yf): 
+    return - uncond_loglikelihood_ar7(params,yf)
 
 bounds_constant = tuple((-np.inf, np.inf) for _ in range(1))
 bounds_phi = tuple((-1, 1) for _ in range(7))
@@ -143,51 +141,29 @@ bounds_sigma = tuple((0,np.inf) for _ in range(1))
 bounds = bounds_constant + bounds_phi + bounds_sigma
 
 ## L-BFGS-B support bounds
-results = scipy.optimize.minimize(uobj, results.x, args = y, method='L-BFGS-B', bounds = bounds)
+results = scipy.optimize.minimize(uobj, results.x, args = yf, method='L-BFGS-B', bounds = bounds)
 print("The parameters estimated by maximizing the unconditional likelihood are:", results.x)
 
 # Forecasting using maximum likelihood parameters 
 
-# Forecasting using maximum likelihood parameters 
-def forecast_max_likelihood(params, y, horizon=7):
-    # Debugging: Print results.x to inspect its structure
-    print("Structure of results.x:", results.x)
-    
+def forecast_max_likelihood(params, yf, horizon=7):
     # Extract parameters
-    beta = params[:-1]  # This might need adjustment based on the structure of results.x
+    beta = params[:-1]
     sigma2 = params[-1]
-
+    
     # Construct lagged matrix for forecast period
-    X_forecast = lagged_matrix(y[-7:], 7)
+    X_forecast = lagged_matrix(yf[-7:], 7)
     X_forecast = np.hstack((np.ones((horizon, 1)), X_forecast))
-
+    
     # Forecast future values
     forecast = X_forecast @ beta
     return forecast
-
-# Call the function
-max_likelihood_forecast = forecast_max_likelihood(results.x, y, horizon=7)
-
-
 
 # Extracted parameters from maximizing likelihood
 max_likelihood_params = results.x
 
 # Forecast using maximum likelihood parameters
-max_likelihood_forecast = forecast_max_likelihood(max_likelihood_params, y, horizon=7)
+max_likelihood_forecast = forecast_max_likelihood(max_likelihood_params, yf, horizon=7)
 
 # Print the forecast
 print("Forecast using maximum likelihood parameters:", max_likelihood_forecast)
-
-# Second test : Different initial guess for parameters (response to Jurek's note)
-import numpy as np
-
-params_initial_guess = np.array([
-    0.0,  # c
-    0.2, -0.1, 0.05, -0.05, 0.02, -0.02, 0.01,  # phi
-    1.0  # sigma2
-])
-
-# Maximization of the likelihood with new initial guess
-results = scipy.optimize.minimize(fun=cobj, x0=params_initial_guess, args=y, method='L-BFGS-B')
-print("The parameters estimated by maximizing the conditional likelihood with the new initial guess are:", results.x)
