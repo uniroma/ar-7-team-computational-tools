@@ -225,7 +225,7 @@ def forecastAR(h=8, model = mods[0]): # defaults: h is the forecasting horizon, 
     lastrow = np.array(INDPRO.tail(7)) #use last 7 rows of INDPRO for the first forecast
     lastrow = np.flip(lastrow) # invert array to align with order of estimated parameters in the model
     for i in range(1, h+1):
-        forecast = model[0] + model[1:8] @ lastrow # mods[0] uses the OLS estimates
+        forecast = model[0] + model[1:8] @ lastrow + np.random.normal(scale=np.sqrt(model[8]))# mods[0] uses the OLS estimates
         lastrow = np.insert(lastrow, 0, forecast)
         lastrow = np.delete(lastrow, -1)
         forecastArray[i-1] = forecast
@@ -240,7 +240,7 @@ results = {'Forecasts': rownames,'OLS': forecastAR(), 'Model 1': forecastAR(mode
 results = pd.DataFrame(results)
 
 caption="Forecasts using the estimated coefficients from OLS and the bounded conditional likelihood maximization."
-#print(results.to_latex(index=False, caption=caption))
+print(results.to_latex(index=False, caption=caption))
 
 rownames = ("$y_{t+1}$", "$y_{t+2}$", "$y_{t+3}$", "$y_{t+4}$",
             "$y_{t+5}$","$y_{t+6}$", "$y_{t+7}$", "$y_{t+8}$")
@@ -250,7 +250,7 @@ results = {'Forecasts': rownames,'OLS': forecastAR(), 'Model 5': forecastAR(mode
 results = pd.DataFrame(results)
 
 caption="Forecasts using the estimated coefficients from OLS and the bounded unconditional likelihood maximization."
-#print(results.to_latex(index=False, caption=caption))
+print(results.to_latex(index=False, caption=caption))
 
 # Comparing OLS, Model 3, Model 7:
 rownames = ("$y_{t+1}$", "$y_{t+2}$", "$y_{t+3}$", "$y_{t+4}$",
@@ -267,7 +267,7 @@ results.loc[len(results.index)] = sum_of_deviations
 
 caption= (
     "Forecasts using OLS, Model 3 (Bounded Conditional Likelihood, Different Initial Guess), Model 7(Bounded Unconditional Likelihood, Different Initial Guess)")
-#print(results.to_latex(index=False, caption=caption, float_format="%.9f" ))
+print(results.to_latex(index=False, caption=caption, float_format="%.9f" ))
 
 # Task 4: Comparing Forecasts by plotting them
 # plotting forecasts:
@@ -299,10 +299,10 @@ modUCon = scipy.optimize.minimize(fun = uobj, x0 =  Initial_Guess, args = train,
 mods = np.array([modOLS, modCon, modUCon])
 def forecastAR(h=8, model = mods[0], data=train): # defaults: h is the forecasting horizon, mods[0] the OLS model
     forecastArray = np.empty(h) # Empty array to store forecasts
-    lastrow = np.array(data.tail(7)) #use last 7 rows of test data for the first forecast
+    lastrow = np.array(data.tail(7)) #use last 7 rows of training data for the first forecast
     lastrow = np.flip(lastrow) # invert array to align with order of estimated parameters in the model
     for i in range(1, h+1):
-        forecast = model[0] + model[1:8] @ lastrow # mods[0] uses the OLS estimates
+        forecast = model[0] + model[1:8] @ lastrow + np.random.normal(scale=np.sqrt(model[8]))# mods[0] uses the OLS estimates
         lastrow = np.insert(lastrow, 0, forecast)
         lastrow = np.delete(lastrow, -1)
         forecastArray[i-1] = forecast
