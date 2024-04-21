@@ -1,0 +1,122 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import} \PYG{n+nn}{pandas} \PYG{k}{as} \PYG{n+nn}{pd}
+\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k}{as} \PYG{n+nn}{np}
+\PYG{c+c1}{\PYGZsh{}Read Data}
+\PYG{n}{df} \PYG{o}{=} \PYG{n}{df} \PYG{o}{=} \PYG{n}{pd}\PYG{o}{.}\PYG{n}{read\PYGZus{}csv}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}\PYGZti{}/Downloads/current.csv\PYGZsq{}}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{}Select INDPRO}
+\PYG{n}{INDPRO} \PYG{o}{=} \PYG{n}{df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}INDPRO\PYGZsq{}}\PYG{p}{]}
+\PYG{c+c1}{\PYGZsh{}Drop first Row}
+\PYG{n}{INDPRO} \PYG{o}{=} \PYG{n}{INDPRO}\PYG{o}{.}\PYG{n}{drop}\PYG{p}{(}\PYG{n}{index}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{}transform INDPRO using log differences}
+\PYG{n}{INDPRO} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{log}\PYG{p}{(}\PYG{n}{INDPRO}\PYG{p}{)}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{()}
+
+\PYG{c+c1}{\PYGZsh{}implement Starter Code from the assignment}
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{} Lagged Matrix Function}
+\PYG{k}{def} \PYG{n+nf}{lagged\PYGZus{}matrix}\PYG{p}{(}\PYG{n}{Y}\PYG{p}{,} \PYG{n}{max\PYGZus{}lag}\PYG{o}{=}\PYG{l+m+mi}{7}\PYG{p}{):}
+    \PYG{n}{n} \PYG{o}{=} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{Y}\PYG{p}{)}
+    \PYG{n}{lagged\PYGZus{}matrix} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{full}\PYG{p}{((}\PYG{n}{n}\PYG{p}{,} \PYG{n}{max\PYGZus{}lag}\PYG{p}{),} \PYG{n}{np}\PYG{o}{.}\PYG{n}{nan}\PYG{p}{)}
+    \PYG{c+c1}{\PYGZsh{} Fill each column with the appropriately lagged data}
+    \PYG{k}{for} \PYG{n}{lag} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{max\PYGZus{}lag} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{):}
+        \PYG{n}{lagged\PYGZus{}matrix}\PYG{p}{[}\PYG{n}{lag}\PYG{p}{:,} \PYG{n}{lag} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{]} \PYG{o}{=} \PYG{n}{Y}\PYG{p}{[:}\PYG{o}{\PYGZhy{}}\PYG{n}{lag}\PYG{p}{]}
+    \PYG{k}{return} \PYG{n}{lagged\PYGZus{}matrix}
+
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{} Mean\PYGZhy{} Variance \PYGZhy{} Stationarity Function}
+\PYG{k}{def} \PYG{n+nf}{unconditional\PYGZus{}ar\PYGZus{}mean\PYGZus{}variance}\PYG{p}{(}\PYG{n}{c}\PYG{p}{,} \PYG{n}{phis}\PYG{p}{,} \PYG{n}{sigma2}\PYG{p}{):}
+    \PYG{c+c1}{\PYGZsh{}\PYGZsh{} The length of phis is p}
+    \PYG{n}{p} \PYG{o}{=} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{phis}\PYG{p}{)}
+    \PYG{n}{A} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{zeros}\PYG{p}{((}\PYG{n}{p}\PYG{p}{,} \PYG{n}{p}\PYG{p}{))}
+    \PYG{n}{A}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{p}{:]} \PYG{o}{=} \PYG{n}{phis}
+    \PYG{n}{A}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{:,} \PYG{l+m+mi}{0}\PYG{p}{:(}\PYG{n}{p}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{)]} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{eye}\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{)}
+    \PYG{c+c1}{\PYGZsh{}\PYGZsh{} Check for stationarity}
+    \PYG{n}{eigA} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{linalg}\PYG{o}{.}\PYG{n}{eig}\PYG{p}{(}\PYG{n}{A}\PYG{p}{)}
+    \PYG{k}{if} \PYG{n+nb}{all}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{abs}\PYG{p}{(}\PYG{n}{eigA}\PYG{o}{.}\PYG{n}{eigenvalues}\PYG{p}{)}\PYG{o}{\PYGZlt{}}\PYG{l+m+mi}{1}\PYG{p}{):}
+        \PYG{n}{stationary} \PYG{o}{=} \PYG{k+kc}{True}
+    \PYG{k}{else}\PYG{p}{:}
+        \PYG{n}{stationary} \PYG{o}{=} \PYG{k+kc}{False}
+    \PYG{c+c1}{\PYGZsh{} Create the vector b}
+    \PYG{n}{b} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{zeros}\PYG{p}{((}\PYG{n}{p}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{))}
+    \PYG{n}{b}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{]} \PYG{o}{=} \PYG{n}{c}
+
+    \PYG{c+c1}{\PYGZsh{} Compute the mean using matrix algebra}
+    \PYG{n}{I} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{eye}\PYG{p}{(}\PYG{n}{p}\PYG{p}{)}
+    \PYG{n}{mu} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{linalg}\PYG{o}{.}\PYG{n}{inv}\PYG{p}{(}\PYG{n}{I} \PYG{o}{\PYGZhy{}} \PYG{n}{A}\PYG{p}{)} \PYG{o}{@} \PYG{n}{b}
+
+    \PYG{c+c1}{\PYGZsh{} Solve the discrete Lyapunov equation}
+    \PYG{n}{Q} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{zeros}\PYG{p}{((}\PYG{n}{p}\PYG{p}{,} \PYG{n}{p}\PYG{p}{))}
+    \PYG{n}{Q}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{]} \PYG{o}{=} \PYG{n}{sigma2}
+    \PYG{c+c1}{\PYGZsh{}Sigma = np.linalg.solve(I \PYGZhy{} np.kron(A, A), Q.flatten()).reshape(7, 7)}
+    \PYG{n}{Sigma} \PYG{o}{=} \PYG{n}{scipy}\PYG{o}{.}\PYG{n}{linalg}\PYG{o}{.}\PYG{n}{solve\PYGZus{}discrete\PYGZus{}lyapunov}\PYG{p}{(}\PYG{n}{A}\PYG{p}{,} \PYG{n}{Q}\PYG{p}{)}
+
+    \PYG{k}{return} \PYG{n}{mu}\PYG{o}{.}\PYG{n}{ravel}\PYG{p}{(),} \PYG{n}{Sigma}\PYG{p}{,} \PYG{n}{stationary}
+
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{} Conditional Likelihood}
+\PYG{k}{def} \PYG{n+nf}{cond\PYGZus{}loglikelihood\PYGZus{}ar7}\PYG{p}{(}\PYG{n}{params}\PYG{p}{,} \PYG{n}{y}\PYG{p}{):}
+    \PYG{n}{c} \PYG{o}{=} \PYG{n}{params}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}
+    \PYG{n}{phi} \PYG{o}{=} \PYG{n}{params}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{l+m+mi}{8}\PYG{p}{]}
+    \PYG{n}{sigma2} \PYG{o}{=} \PYG{n}{params}\PYG{p}{[}\PYG{l+m+mi}{8}\PYG{p}{]}
+    \PYG{n}{mu}\PYG{p}{,} \PYG{n}{Sigma}\PYG{p}{,} \PYG{n}{stationary} \PYG{o}{=} \PYG{n}{unconditional\PYGZus{}ar\PYGZus{}mean\PYGZus{}variance}\PYG{p}{(}\PYG{n}{c}\PYG{p}{,} \PYG{n}{phi}\PYG{p}{,} \PYG{n}{sigma2}\PYG{p}{)}
+    \PYG{c+c1}{\PYGZsh{}\PYGZsh{} We could check that at phis the process is stationary and return \PYGZhy{}Inf if it is not}
+    \PYG{k}{if} \PYG{o+ow}{not}\PYG{p}{(}\PYG{n}{stationary}\PYG{p}{):}
+        \PYG{k}{return} \PYG{o}{\PYGZhy{}}\PYG{n}{np}\PYG{o}{.}\PYG{n}{inf}
+    \PYG{c+c1}{\PYGZsh{}\PYGZsh{} The distribution of}
+    \PYG{c+c1}{\PYGZsh{} y\PYGZus{}t|y\PYGZus{}\PYGZob{}t\PYGZhy{}1\PYGZcb{}, ..., y\PYGZus{}\PYGZob{}t\PYGZhy{}7\PYGZcb{} \PYGZti{} N(c+\PYGZbs{}phi\PYGZus{}\PYGZob{}1\PYGZcb{}*y\PYGZus{}\PYGZob{}t\PYGZhy{}1\PYGZcb{}+...+\PYGZbs{}phi\PYGZus{}\PYGZob{}7\PYGZcb{}y\PYGZus{}\PYGZob{}t\PYGZhy{}7\PYGZcb{}, sigma2)}
+    \PYG{c+c1}{\PYGZsh{}\PYGZsh{} Create lagged matrix}
+    \PYG{n}{X} \PYG{o}{=} \PYG{n}{lagged\PYGZus{}matrix}\PYG{p}{(}\PYG{n}{y}\PYG{p}{,} \PYG{l+m+mi}{7}\PYG{p}{)}
+    \PYG{n}{yf} \PYG{o}{=} \PYG{n}{y}\PYG{p}{[}\PYG{l+m+mi}{7}\PYG{p}{:]}
+    \PYG{n}{Xf} \PYG{o}{=} \PYG{n}{X}\PYG{p}{[}\PYG{l+m+mi}{7}\PYG{p}{:,:]}
+    \PYG{n}{loglik} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sum}\PYG{p}{(}\PYG{n}{norm}\PYG{o}{.}\PYG{n}{logpdf}\PYG{p}{(}\PYG{n}{yf}\PYG{p}{,} \PYG{n}{loc}\PYG{o}{=}\PYG{p}{(}\PYG{n}{c} \PYG{o}{+} \PYG{n}{Xf}\PYG{n+nd}{@phi}\PYG{p}{),} \PYG{n}{scale}\PYG{o}{=}\PYG{n}{np}\PYG{o}{.}\PYG{n}{sqrt}\PYG{p}{(}\PYG{n}{sigma2}\PYG{p}{)))}
+    \PYG{k}{return} \PYG{n}{loglik}
+
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{} Unconditional Likelihood}
+\PYG{k}{def} \PYG{n+nf}{uncond\PYGZus{}loglikelihood\PYGZus{}ar7}\PYG{p}{(}\PYG{n}{params}\PYG{p}{,} \PYG{n}{y}\PYG{p}{):}
+    \PYG{c+c1}{\PYGZsh{}\PYGZsh{} The unconditional loglikelihood}
+    \PYG{c+c1}{\PYGZsh{}\PYGZsh{} is the unconditional \PYGZdq{}plus\PYGZdq{} the density of the}
+    \PYG{c+c1}{\PYGZsh{}\PYGZsh{} first p (7 in our case) observations}
+    \PYG{n}{cloglik} \PYG{o}{=} \PYG{n}{cond\PYGZus{}loglikelihood\PYGZus{}ar7}\PYG{p}{(}\PYG{n}{params}\PYG{p}{,} \PYG{n}{y}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{}\PYGZsh{} Calculate initial}
+    \PYG{c+c1}{\PYGZsh{} y\PYGZus{}1, ..., y\PYGZus{}7 \PYGZti{} N(mu, sigma\PYGZus{}y)}
+    \PYG{n}{c} \PYG{o}{=} \PYG{n}{params}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}
+    \PYG{n}{phi} \PYG{o}{=} \PYG{n}{params}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{l+m+mi}{8}\PYG{p}{]}
+    \PYG{n}{sigma2} \PYG{o}{=} \PYG{n}{params}\PYG{p}{[}\PYG{l+m+mi}{8}\PYG{p}{]}
+    \PYG{n}{mu}\PYG{p}{,} \PYG{n}{Sigma}\PYG{p}{,} \PYG{n}{stationary} \PYG{o}{=} \PYG{n}{unconditional\PYGZus{}ar\PYGZus{}mean\PYGZus{}variance}\PYG{p}{(}\PYG{n}{c}\PYG{p}{,} \PYG{n}{phi}\PYG{p}{,} \PYG{n}{sigma2}\PYG{p}{)}
+    \PYG{k}{if} \PYG{o+ow}{not}\PYG{p}{(}\PYG{n}{stationary}\PYG{p}{):}
+        \PYG{k}{return} \PYG{o}{\PYGZhy{}}\PYG{n}{np}\PYG{o}{.}\PYG{n}{inf}
+    \PYG{n}{mvn} \PYG{o}{=} \PYG{n}{multivariate\PYGZus{}normal}\PYG{p}{(}\PYG{n}{mean}\PYG{o}{=}\PYG{n}{mu}\PYG{p}{,} \PYG{n}{cov}\PYG{o}{=}\PYG{n}{Sigma}\PYG{p}{,} \PYG{n}{allow\PYGZus{}singular}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+    \PYG{n}{uloglik} \PYG{o}{=} \PYG{n}{cloglik} \PYG{o}{+} \PYG{n}{mvn}\PYG{o}{.}\PYG{n}{logpdf}\PYG{p}{(}\PYG{n}{y}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{:}\PYG{l+m+mi}{7}\PYG{p}{])}
+    \PYG{k}{return} \PYG{n}{uloglik}
+
+\PYG{c+c1}{\PYGZsh{} Using INDPRO as the target variable.}
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{} Computing OLS}
+\PYG{n}{X} \PYG{o}{=} \PYG{n}{lagged\PYGZus{}matrix}\PYG{p}{(}\PYG{n}{INDPRO}\PYG{p}{,} \PYG{l+m+mi}{7}\PYG{p}{)}
+\PYG{n}{yf} \PYG{o}{=} \PYG{n}{INDPRO}\PYG{p}{[}\PYG{l+m+mi}{7}\PYG{p}{:]}
+\PYG{n}{Xf} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{hstack}\PYG{p}{((}\PYG{n}{np}\PYG{o}{.}\PYG{n}{ones}\PYG{p}{((}\PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{INDPRO}\PYG{p}{)}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{7}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{)),} \PYG{n}{X}\PYG{p}{[}\PYG{l+m+mi}{7}\PYG{p}{:,:]))}
+\PYG{n}{beta} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{linalg}\PYG{o}{.}\PYG{n}{solve}\PYG{p}{(}\PYG{n}{Xf}\PYG{o}{.}\PYG{n}{T}\PYG{n+nd}{@Xf}\PYG{p}{,} \PYG{n}{Xf}\PYG{o}{.}\PYG{n}{T}\PYG{n+nd}{@yf}\PYG{p}{)}
+\PYG{n}{sigma2\PYGZus{}hat} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{((}\PYG{n}{yf} \PYG{o}{\PYGZhy{}} \PYG{n}{Xf}\PYG{n+nd}{@beta}\PYG{p}{)}\PYG{o}{**}\PYG{l+m+mi}{2}\PYG{p}{)}
+\PYG{n}{params}\PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{hstack}\PYG{p}{((}\PYG{n}{beta}\PYG{p}{,} \PYG{n}{sigma2\PYGZus{}hat}\PYG{p}{))}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}The parameters of the OLS model are\PYGZdq{}}\PYG{p}{,} \PYG{n}{params}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} to maximize likelihood a function of the negative likelihood is defined to be minimized}
+\PYG{n}{params} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{([}
+    \PYG{l+m+mf}{0.0012}\PYG{p}{,} \PYG{c+c1}{\PYGZsh{}\PYGZsh{} c}
+    \PYG{l+m+mf}{0.0291}\PYG{p}{,} \PYG{l+m+mf}{0.07}\PYG{p}{,} \PYG{l+m+mf}{0.059}\PYG{p}{,} \PYG{l+m+mf}{0.04}\PYG{p}{,} \PYG{l+m+mf}{0.04}\PYG{p}{,} \PYG{l+m+mf}{0.02}\PYG{p}{,} \PYG{l+m+mf}{0.06}\PYG{p}{,} \PYG{c+c1}{\PYGZsh{}\PYGZsh{} phi}
+    \PYG{l+m+mf}{0.008} \PYG{c+c1}{\PYGZsh{}\PYGZsh{} sigma2}
+    \PYG{p}{])}
+
+\PYG{k}{def} \PYG{n+nf}{cobj}\PYG{p}{(}\PYG{n}{params}\PYG{p}{,} \PYG{n}{y}\PYG{p}{):}
+    \PYG{k}{return} \PYG{o}{\PYGZhy{}} \PYG{n}{cond\PYGZus{}loglikelihood\PYGZus{}ar7}\PYG{p}{(}\PYG{n}{params}\PYG{p}{,}\PYG{n}{y}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Maximizing the likelihood}
+\PYG{n}{results} \PYG{o}{=} \PYG{n}{scipy}\PYG{o}{.}\PYG{n}{optimize}\PYG{o}{.}\PYG{n}{minimize}\PYG{p}{(}\PYG{n}{fun} \PYG{o}{=} \PYG{n}{cobj}\PYG{p}{,} \PYG{n}{x0} \PYG{o}{=}  \PYG{n}{params}\PYG{p}{,} \PYG{n}{args} \PYG{o}{=} \PYG{n}{INDPRO}\PYG{p}{,} \PYG{n}{method}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}L\PYGZhy{}BFGS\PYGZhy{}B\PYGZsq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}The parameters estimated by maximizing the conditional likelihood are:\PYGZdq{}}\PYG{p}{,} \PYG{n}{results}\PYG{o}{.}\PYG{n}{x}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{}Same Procedure for unconditional likelihood}
+\PYG{n}{params}\PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{hstack}\PYG{p}{((}\PYG{n}{beta}\PYG{p}{,} \PYG{n}{sigma2\PYGZus{}hat}\PYG{p}{))}
+
+\PYG{k}{def} \PYG{n+nf}{uobj}\PYG{p}{(}\PYG{n}{params}\PYG{p}{,} \PYG{n}{y}\PYG{p}{):}
+    \PYG{k}{return} \PYG{o}{\PYGZhy{}} \PYG{n}{uncond\PYGZus{}loglikelihood\PYGZus{}ar7}\PYG{p}{(}\PYG{n}{params}\PYG{p}{,}\PYG{n}{y}\PYG{p}{)}
+
+\PYG{n}{results} \PYG{o}{=} \PYG{n}{scipy}\PYG{o}{.}\PYG{n}{optimize}\PYG{o}{.}\PYG{n}{minimize}\PYG{p}{(}\PYG{n}{uobj}\PYG{p}{,} \PYG{n}{params}\PYG{p}{,} \PYG{n}{args} \PYG{o}{=} \PYG{n}{INDPRO}\PYG{p}{,} \PYG{n}{method}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}Nelder\PYGZhy{}Mead\PYGZsq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}The parameters estimated by maximizing the unconditional likelihood are:\PYGZdq{}}\PYG{p}{,} \PYG{n}{results}\PYG{o}{.}\PYG{n}{x}\PYG{p}{)}
+
+\end{Verbatim}

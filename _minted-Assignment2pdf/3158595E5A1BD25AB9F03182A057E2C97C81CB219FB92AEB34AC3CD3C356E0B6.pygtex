@@ -1,0 +1,11 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n}{umods} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{([}\PYG{n}{modOLS}\PYG{p}{,} \PYG{n}{mod5}\PYG{p}{,} \PYG{n}{mod6}\PYG{p}{])}
+\PYG{n}{umodsDF} \PYG{o}{=} \PYG{n}{pd}\PYG{o}{.}\PYG{n}{DataFrame}\PYG{p}{(}\PYG{n}{umods}\PYG{p}{)}
+\PYG{n}{umodsDF} \PYG{o}{=} \PYG{n}{umodsDF}\PYG{o}{.}\PYG{n}{T}
+\PYG{n}{rownames} \PYG{o}{=} \PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}c\PYGZdl{}\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}\PYGZbs{}phi\PYGZus{}1\PYGZdl{}\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}\PYGZbs{}phi\PYGZus{}2\PYGZdl{}\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}\PYGZbs{}phi\PYGZus{}3\PYGZdl{}\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}\PYGZbs{}phi\PYGZus{}4\PYGZdl{}\PYGZdq{}}\PYG{p}{,}
+            \PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}\PYGZbs{}phi\PYGZus{}5\PYGZdl{}\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}\PYGZbs{}phi\PYGZus{}6\PYGZdl{}\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}\PYGZbs{}phi\PYGZus{}7\PYGZdl{}\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}\PYGZbs{}sigma\PYGZca{}2\PYGZdl{}\PYGZdq{}}\PYG{p}{]}
+\PYG{n}{umodsDF}\PYG{o}{.}\PYG{n}{insert}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}Coefficients\PYGZdq{}}\PYG{p}{,} \PYG{n}{rownames}\PYG{p}{)}
+\PYG{n}{column\PYGZus{}names} \PYG{o}{=} \PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Coefficients\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}OLS\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}Model 5\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}Model 6\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{umodsDF}\PYG{o}{.}\PYG{n}{columns} \PYG{o}{=} \PYG{n}{column\PYGZus{}names}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{umodsDF}\PYG{o}{.}\PYG{n}{to\PYGZus{}latex}\PYG{p}{())}
+\end{Verbatim}

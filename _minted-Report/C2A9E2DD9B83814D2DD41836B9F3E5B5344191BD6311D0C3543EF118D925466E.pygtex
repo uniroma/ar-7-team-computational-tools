@@ -1,0 +1,31 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from} \PYG{n+nn}{scipy.stats} \PYG{k+kn}{import} \PYG{n}{norm}
+\PYG{k+kn}{from} \PYG{n+nn}{scipy.stats} \PYG{k+kn}{import} \PYG{n}{multivariate\PYGZus{}normal}
+\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k}{as} \PYG{n+nn}{np}
+
+\PYG{k}{def} \PYG{n+nf}{lagged\PYGZus{}matrix}\PYG{p}{(}\PYG{n}{Y}\PYG{p}{,} \PYG{n}{max\PYGZus{}lag}\PYG{o}{=}\PYG{l+m+mi}{7}\PYG{p}{):}
+    \PYG{n}{n} \PYG{o}{=} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{Y}\PYG{p}{)}
+    \PYG{n}{lagged\PYGZus{}matrix} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{full}\PYG{p}{((}\PYG{n}{n}\PYG{p}{,} \PYG{n}{max\PYGZus{}lag}\PYG{p}{),} \PYG{n}{np}\PYG{o}{.}\PYG{n}{nan}\PYG{p}{)}
+    \PYG{c+c1}{\PYGZsh{} Fill each column with the appropriately lagged data}
+    \PYG{k}{for} \PYG{n}{lag} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{max\PYGZus{}lag} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{):}
+        \PYG{n}{lagged\PYGZus{}matrix}\PYG{p}{[}\PYG{n}{lag}\PYG{p}{:,} \PYG{n}{lag} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{]} \PYG{o}{=} \PYG{n}{Y}\PYG{p}{[:}\PYG{o}{\PYGZhy{}}\PYG{n}{lag}\PYG{p}{]}
+    \PYG{k}{return} \PYG{n}{lagged\PYGZus{}matrix}
+
+
+\PYG{k}{def} \PYG{n+nf}{cond\PYGZus{}loglikelihood\PYGZus{}ar7}\PYG{p}{(}\PYG{n}{params}\PYG{p}{,} \PYG{n}{y}\PYG{p}{):}
+    \PYG{n}{c} \PYG{o}{=} \PYG{n}{params}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}
+    \PYG{n}{phi} \PYG{o}{=} \PYG{n}{params}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{l+m+mi}{8}\PYG{p}{]}
+    \PYG{n}{sigma2} \PYG{o}{=} \PYG{n}{params}\PYG{p}{[}\PYG{l+m+mi}{8}\PYG{p}{]}
+    \PYG{n}{mu}\PYG{p}{,} \PYG{n}{Sigma}\PYG{p}{,} \PYG{n}{stationary} \PYG{o}{=} \PYG{n}{unconditional\PYGZus{}ar\PYGZus{}mean\PYGZus{}variance}\PYG{p}{(}\PYG{n}{c}\PYG{p}{,} \PYG{n}{phi}\PYG{p}{,} \PYG{n}{sigma2}\PYG{p}{)}
+    \PYG{c+c1}{\PYGZsh{}\PYGZsh{} We could check that at phis the process is stationary and return \PYGZhy{}Inf if it is not}
+    \PYG{k}{if} \PYG{o+ow}{not}\PYG{p}{(}\PYG{n}{stationary}\PYG{p}{):}
+        \PYG{k}{return} \PYG{o}{\PYGZhy{}}\PYG{n}{np}\PYG{o}{.}\PYG{n}{inf}
+    \PYG{c+c1}{\PYGZsh{}\PYGZsh{} The distribution of}
+    \PYG{c+c1}{\PYGZsh{} y\PYGZus{}t|y\PYGZus{}\PYGZob{}t\PYGZhy{}1\PYGZcb{}, ..., y\PYGZus{}\PYGZob{}t\PYGZhy{}7\PYGZcb{} \PYGZti{} N(c+\PYGZbs{}phi\PYGZus{}\PYGZob{}1\PYGZcb{}*y\PYGZus{}\PYGZob{}t\PYGZhy{}1\PYGZcb{}+...+\PYGZbs{}phi\PYGZus{}\PYGZob{}7\PYGZcb{}y\PYGZus{}\PYGZob{}t\PYGZhy{}7\PYGZcb{}, sigma2)}
+    \PYG{c+c1}{\PYGZsh{}\PYGZsh{} Create lagged matrix}
+    \PYG{n}{X} \PYG{o}{=} \PYG{n}{lagged\PYGZus{}matrix}\PYG{p}{(}\PYG{n}{y}\PYG{p}{,} \PYG{l+m+mi}{7}\PYG{p}{)}
+    \PYG{n}{yf} \PYG{o}{=} \PYG{n}{y}\PYG{p}{[}\PYG{l+m+mi}{7}\PYG{p}{:]}
+    \PYG{n}{Xf} \PYG{o}{=} \PYG{n}{X}\PYG{p}{[}\PYG{l+m+mi}{7}\PYG{p}{:,:]}
+    \PYG{n}{loglik} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sum}\PYG{p}{(}\PYG{n}{norm}\PYG{o}{.}\PYG{n}{logpdf}\PYG{p}{(}\PYG{n}{yf}\PYG{p}{,} \PYG{n}{loc}\PYG{o}{=}\PYG{p}{(}\PYG{n}{c} \PYG{o}{+} \PYG{n}{Xf}\PYG{n+nd}{@phi}\PYG{p}{),} \PYG{n}{scale}\PYG{o}{=}\PYG{n}{np}\PYG{o}{.}\PYG{n}{sqrt}\PYG{p}{(}\PYG{n}{sigma2}\PYG{p}{)))}
+    \PYG{k}{return} \PYG{n}{loglik}
+\end{Verbatim}

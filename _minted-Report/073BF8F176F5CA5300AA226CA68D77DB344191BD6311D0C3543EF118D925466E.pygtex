@@ -1,0 +1,40 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+
+\PYG{c+c1}{\PYGZsh{} Now we estimate multiple models:}
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{} OLS model}
+\PYG{n}{modOLS} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{hstack}\PYG{p}{((}\PYG{n}{beta}\PYG{p}{,} \PYG{n}{sigma2\PYGZus{}hat}\PYG{p}{))}
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{} Conditional Likelihood}
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{} 1. Using the OLS parameters as the initial guess}
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{}\PYGZsh{} L\PYGZhy{}BFGS\PYGZhy{}B}
+\PYG{n}{mod1} \PYG{o}{=} \PYG{n}{scipy}\PYG{o}{.}\PYG{n}{optimize}\PYG{o}{.}\PYG{n}{minimize}\PYG{p}{(}\PYG{n}{fun} \PYG{o}{=} \PYG{n}{cobj}\PYG{p}{,} \PYG{n}{x0} \PYG{o}{=}  \PYG{n}{modOLS}\PYG{p}{,} \PYG{n}{args} \PYG{o}{=} \PYG{n}{INDPRO}\PYG{p}{,} \PYG{n}{method}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}L\PYGZhy{}BFGS\PYGZhy{}B\PYGZsq{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{x}
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{}\PYGZsh{} Nelder\PYGZhy{}Mead}
+\PYG{n}{mod2} \PYG{o}{=} \PYG{n}{scipy}\PYG{o}{.}\PYG{n}{optimize}\PYG{o}{.}\PYG{n}{minimize}\PYG{p}{(}\PYG{n}{fun} \PYG{o}{=} \PYG{n}{cobj}\PYG{p}{,} \PYG{n}{x0} \PYG{o}{=}  \PYG{n}{modOLS}\PYG{p}{,} \PYG{n}{args} \PYG{o}{=} \PYG{n}{INDPRO}\PYG{p}{,} \PYG{n}{method}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}Nelder\PYGZhy{}Mead\PYGZsq{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{x}
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{} 2. Using a slightly different initial guess}
+\PYG{n}{Initial\PYGZus{}Guess} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{([}
+    \PYG{l+m+mf}{0.0012}\PYG{p}{,} \PYG{c+c1}{\PYGZsh{}\PYGZsh{} c}
+    \PYG{l+m+mf}{0.0291}\PYG{p}{,} \PYG{l+m+mf}{0.07}\PYG{p}{,} \PYG{l+m+mf}{0.059}\PYG{p}{,} \PYG{l+m+mf}{0.04}\PYG{p}{,} \PYG{l+m+mf}{0.04}\PYG{p}{,} \PYG{l+m+mf}{0.02}\PYG{p}{,} \PYG{l+m+mf}{0.06}\PYG{p}{,} \PYG{c+c1}{\PYGZsh{}\PYGZsh{} phi}
+    \PYG{l+m+mf}{0.009} \PYG{c+c1}{\PYGZsh{}\PYGZsh{} sigma2}
+\PYG{p}{])}
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{}\PYGZsh{} L\PYGZhy{}BFGS\PYGZhy{}B}
+\PYG{n}{mod3} \PYG{o}{=} \PYG{n}{scipy}\PYG{o}{.}\PYG{n}{optimize}\PYG{o}{.}\PYG{n}{minimize}\PYG{p}{(}\PYG{n}{fun} \PYG{o}{=} \PYG{n}{cobj}\PYG{p}{,} \PYG{n}{x0} \PYG{o}{=}  \PYG{n}{Initial\PYGZus{}Guess}\PYG{p}{,} \PYG{n}{args} \PYG{o}{=} \PYG{n}{INDPRO}\PYG{p}{,} \PYG{n}{method}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}L\PYGZhy{}BFGS\PYGZhy{}B\PYGZsq{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{x}
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{}\PYGZsh{} Nelder\PYGZhy{}Mead}
+\PYG{n}{mod4} \PYG{o}{=} \PYG{n}{scipy}\PYG{o}{.}\PYG{n}{optimize}\PYG{o}{.}\PYG{n}{minimize}\PYG{p}{(}\PYG{n}{fun} \PYG{o}{=} \PYG{n}{cobj}\PYG{p}{,} \PYG{n}{x0} \PYG{o}{=}  \PYG{n}{Initial\PYGZus{}Guess}\PYG{p}{,} \PYG{n}{args} \PYG{o}{=} \PYG{n}{INDPRO}\PYG{p}{,} \PYG{n}{method}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}Nelder\PYGZhy{}Mead\PYGZsq{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{x}
+
+\PYG{c+c1}{\PYGZsh{} Compiling models to print to LateX table}
+\PYG{k}{def} \PYG{n+nf}{as\PYGZus{}latex\PYGZus{}table}\PYG{p}{(}\PYG{n}{rows}\PYG{p}{,} \PYG{n}{rownames}\PYG{p}{,} \PYG{n}{colnames}\PYG{p}{,} \PYG{n}{caption}\PYG{p}{):}
+    \PYG{n}{df} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{n}{rows}\PYG{p}{)}
+    \PYG{n}{df} \PYG{o}{=} \PYG{n}{pd}\PYG{o}{.}\PYG{n}{DataFrame}\PYG{p}{(}\PYG{n}{df}\PYG{p}{)}
+    \PYG{n}{df} \PYG{o}{=} \PYG{n}{df}\PYG{o}{.}\PYG{n}{T}
+    \PYG{n}{df}\PYG{o}{.}\PYG{n}{insert}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{colnames}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{],} \PYG{n}{rownames}\PYG{p}{)}
+    \PYG{n}{df}\PYG{o}{.}\PYG{n}{columns} \PYG{o}{=} \PYG{n}{column\PYGZus{}names}
+    \PYG{n}{tabular} \PYG{o}{=} \PYG{n}{df}\PYG{o}{.}\PYG{n}{to\PYGZus{}latex}\PYG{p}{(}\PYG{n}{index}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{,}
+                           \PYG{n}{caption}\PYG{o}{=}\PYG{n}{caption}\PYG{p}{)}
+    \PYG{k}{return} \PYG{n}{tabular}
+
+\PYG{n}{column\PYGZus{}names} \PYG{o}{=} \PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Coefficients\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}OLS\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}Model 1\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}Model 2\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}Model 3\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}Model 4\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{rownames} \PYG{o}{=} \PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}c\PYGZdl{}\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}}\PYG{l+s+se}{\PYGZbs{}\PYGZbs{}}\PYG{l+s+s2}{phi\PYGZus{}1\PYGZdl{}\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}}\PYG{l+s+se}{\PYGZbs{}\PYGZbs{}}\PYG{l+s+s2}{phi\PYGZus{}2\PYGZdl{}\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}}\PYG{l+s+se}{\PYGZbs{}\PYGZbs{}}\PYG{l+s+s2}{phi\PYGZus{}3\PYGZdl{}\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}}\PYG{l+s+se}{\PYGZbs{}\PYGZbs{}}\PYG{l+s+s2}{phi\PYGZus{}4\PYGZdl{}\PYGZdq{}}\PYG{p}{,}
+            \PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}}\PYG{l+s+se}{\PYGZbs{}\PYGZbs{}}\PYG{l+s+s2}{phi\PYGZus{}5\PYGZdl{}\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}}\PYG{l+s+se}{\PYGZbs{}\PYGZbs{}}\PYG{l+s+s2}{phi\PYGZus{}6\PYGZdl{}\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}}\PYG{l+s+se}{\PYGZbs{}\PYGZbs{}}\PYG{l+s+s2}{phi\PYGZus{}7\PYGZdl{}\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}}\PYG{l+s+se}{\PYGZbs{}\PYGZbs{}}\PYG{l+s+s2}{sigma\PYGZca{}2\PYGZdl{}\PYGZdq{}}\PYG{p}{]}
+\PYG{n}{caption}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}Results of the unconstrained maximization of the conditional likelihood\PYGZdq{}}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{as\PYGZus{}latex\PYGZus{}table}\PYG{p}{([}\PYG{n}{modOLS}\PYG{p}{,} \PYG{n}{mod1}\PYG{p}{,} \PYG{n}{mod2}\PYG{p}{,} \PYG{n}{mod3}\PYG{p}{,} \PYG{n}{mod4}\PYG{p}{],}
+	\PYG{n}{rownames}\PYG{o}{=}\PYG{n}{rownames}\PYG{p}{,} \PYG{n}{colnames}\PYG{o}{=}\PYG{n}{column\PYGZus{}names}\PYG{p}{,} \PYG{n}{caption}\PYG{o}{=}\PYG{n}{caption}\PYG{p}{))}
+\end{Verbatim}

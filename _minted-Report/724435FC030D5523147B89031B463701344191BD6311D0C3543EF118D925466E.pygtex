@@ -1,0 +1,24 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{} We then reestimate these models unsing constrained maximization:}
+\PYG{n}{bounds\PYGZus{}constant} \PYG{o}{=} \PYG{n+nb}{tuple}\PYG{p}{((}\PYG{o}{\PYGZhy{}}\PYG{n}{np}\PYG{o}{.}\PYG{n}{inf}\PYG{p}{,} \PYG{n}{np}\PYG{o}{.}\PYG{n}{inf}\PYG{p}{)} \PYG{k}{for} \PYG{n}{\PYGZus{}} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{))}
+\PYG{n}{bounds\PYGZus{}phi} \PYG{o}{=} \PYG{n+nb}{tuple}\PYG{p}{((}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{)} \PYG{k}{for} \PYG{n}{\PYGZus{}} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{7}\PYG{p}{))}
+\PYG{n}{bounds\PYGZus{}sigma} \PYG{o}{=} \PYG{n+nb}{tuple}\PYG{p}{((}\PYG{l+m+mf}{0.000001}\PYG{p}{,}\PYG{n}{np}\PYG{o}{.}\PYG{n}{inf}\PYG{p}{)} \PYG{k}{for} \PYG{n}{\PYGZus{}} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{))}
+\PYG{n}{bounds} \PYG{o}{=} \PYG{n}{bounds\PYGZus{}constant} \PYG{o}{+} \PYG{n}{bounds\PYGZus{}phi} \PYG{o}{+} \PYG{n}{bounds\PYGZus{}sigma}
+
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{} Conditional Likelihood}
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{} 1. Using the OLS parameters as the initial guess}
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{}\PYGZsh{} L\PYGZhy{}BFGS\PYGZhy{}B}
+\PYG{n}{mod1} \PYG{o}{=} \PYG{n}{scipy}\PYG{o}{.}\PYG{n}{optimize}\PYG{o}{.}\PYG{n}{minimize}\PYG{p}{(}\PYG{n}{fun} \PYG{o}{=} \PYG{n}{cobj}\PYG{p}{,} \PYG{n}{x0} \PYG{o}{=}  \PYG{n}{modOLS}\PYG{p}{,} \PYG{n}{args} \PYG{o}{=} \PYG{n}{INDPRO}\PYG{p}{,} \PYG{n}{method}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}L\PYGZhy{}BFGS\PYGZhy{}B\PYGZsq{}}\PYG{p}{,} \PYG{n}{bounds}\PYG{o}{=}\PYG{n}{bounds}\PYG{p}{)}\PYG{o}{.}\PYG{n}{x}
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{}\PYGZsh{} Nelder\PYGZhy{}Mead}
+\PYG{n}{mod2} \PYG{o}{=} \PYG{n}{scipy}\PYG{o}{.}\PYG{n}{optimize}\PYG{o}{.}\PYG{n}{minimize}\PYG{p}{(}\PYG{n}{fun} \PYG{o}{=} \PYG{n}{cobj}\PYG{p}{,} \PYG{n}{x0} \PYG{o}{=}  \PYG{n}{modOLS}\PYG{p}{,} \PYG{n}{args} \PYG{o}{=} \PYG{n}{INDPRO}\PYG{p}{,} \PYG{n}{method}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}Nelder\PYGZhy{}Mead\PYGZsq{}}\PYG{p}{,} \PYG{n}{bounds}\PYG{o}{=}\PYG{n}{bounds}\PYG{p}{)}\PYG{o}{.}\PYG{n}{x}
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{} 2. Using a slightly different initial guess}
+\PYG{n}{Initial\PYGZus{}Guess} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{([}
+    \PYG{l+m+mf}{0.0012}\PYG{p}{,} \PYG{c+c1}{\PYGZsh{}\PYGZsh{} c}
+    \PYG{l+m+mf}{0.0291}\PYG{p}{,} \PYG{l+m+mf}{0.07}\PYG{p}{,} \PYG{l+m+mf}{0.059}\PYG{p}{,} \PYG{l+m+mf}{0.04}\PYG{p}{,} \PYG{l+m+mf}{0.04}\PYG{p}{,} \PYG{l+m+mf}{0.02}\PYG{p}{,} \PYG{l+m+mf}{0.06}\PYG{p}{,} \PYG{c+c1}{\PYGZsh{}\PYGZsh{} phi}
+    \PYG{l+m+mf}{0.009} \PYG{c+c1}{\PYGZsh{}\PYGZsh{} sigma2}
+\PYG{p}{])}
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{}\PYGZsh{} L\PYGZhy{}BFGS\PYGZhy{}B}
+\PYG{n}{mod3} \PYG{o}{=} \PYG{n}{scipy}\PYG{o}{.}\PYG{n}{optimize}\PYG{o}{.}\PYG{n}{minimize}\PYG{p}{(}\PYG{n}{fun} \PYG{o}{=} \PYG{n}{cobj}\PYG{p}{,} \PYG{n}{x0} \PYG{o}{=}  \PYG{n}{Initial\PYGZus{}Guess}\PYG{p}{,} \PYG{n}{args} \PYG{o}{=} \PYG{n}{INDPRO}\PYG{p}{,} \PYG{n}{method}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}L\PYGZhy{}BFGS\PYGZhy{}B\PYGZsq{}}\PYG{p}{,} \PYG{n}{bounds}\PYG{o}{=}\PYG{n}{bounds}\PYG{p}{)}\PYG{o}{.}\PYG{n}{x}
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{}\PYGZsh{} Nelder\PYGZhy{}Mead}
+\PYG{n}{mod4} \PYG{o}{=} \PYG{n}{scipy}\PYG{o}{.}\PYG{n}{optimize}\PYG{o}{.}\PYG{n}{minimize}\PYG{p}{(}\PYG{n}{fun} \PYG{o}{=} \PYG{n}{cobj}\PYG{p}{,} \PYG{n}{x0} \PYG{o}{=}  \PYG{n}{Initial\PYGZus{}Guess}\PYG{p}{,} \PYG{n}{args} \PYG{o}{=} \PYG{n}{INDPRO}\PYG{p}{,} \PYG{n}{method}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}Nelder\PYGZhy{}Mead\PYGZsq{}}\PYG{p}{,} \PYG{n}{bounds}\PYG{o}{=}\PYG{n}{bounds}\PYG{p}{)}\PYG{o}{.}\PYG{n}{x}
+\end{Verbatim}

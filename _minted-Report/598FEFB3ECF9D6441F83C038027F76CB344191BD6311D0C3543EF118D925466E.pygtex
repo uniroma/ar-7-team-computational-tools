@@ -1,0 +1,19 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k}{def} \PYG{n+nf}{uncond\PYGZus{}loglikelihood\PYGZus{}ar7}\PYG{p}{(}\PYG{n}{params}\PYG{p}{,} \PYG{n}{y}\PYG{p}{):}
+    \PYG{c+c1}{\PYGZsh{}\PYGZsh{} The unconditional loglikelihood}
+    \PYG{c+c1}{\PYGZsh{}\PYGZsh{} is the unconditional \PYGZdq{}plus\PYGZdq{} the density of the}
+    \PYG{c+c1}{\PYGZsh{}\PYGZsh{} first p (7 in our case) observations}
+    \PYG{n}{cloglik} \PYG{o}{=} \PYG{n}{cond\PYGZus{}loglikelihood\PYGZus{}ar7}\PYG{p}{(}\PYG{n}{params}\PYG{p}{,} \PYG{n}{y}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{}\PYGZsh{} Calculate initial}
+    \PYG{c+c1}{\PYGZsh{} y\PYGZus{}1, ..., y\PYGZus{}7 \PYGZti{} N(mu, sigma\PYGZus{}y)}
+    \PYG{n}{c} \PYG{o}{=} \PYG{n}{params}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}
+    \PYG{n}{phi} \PYG{o}{=} \PYG{n}{params}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{l+m+mi}{8}\PYG{p}{]}
+    \PYG{n}{sigma2} \PYG{o}{=} \PYG{n}{params}\PYG{p}{[}\PYG{l+m+mi}{8}\PYG{p}{]}
+    \PYG{n}{mu}\PYG{p}{,} \PYG{n}{Sigma}\PYG{p}{,} \PYG{n}{stationary} \PYG{o}{=} \PYG{n}{unconditional\PYGZus{}ar\PYGZus{}mean\PYGZus{}variance}\PYG{p}{(}\PYG{n}{c}\PYG{p}{,} \PYG{n}{phi}\PYG{p}{,} \PYG{n}{sigma2}\PYG{p}{)}
+    \PYG{k}{if} \PYG{o+ow}{not}\PYG{p}{(}\PYG{n}{stationary}\PYG{p}{):}
+        \PYG{k}{return} \PYG{o}{\PYGZhy{}}\PYG{n}{np}\PYG{o}{.}\PYG{n}{inf}
+    \PYG{n}{mvn} \PYG{o}{=} \PYG{n}{multivariate\PYGZus{}normal}\PYG{p}{(}\PYG{n}{mean}\PYG{o}{=}\PYG{n}{mu}\PYG{p}{,} \PYG{n}{cov}\PYG{o}{=}\PYG{n}{Sigma}\PYG{p}{,} \PYG{n}{allow\PYGZus{}singular}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+    \PYG{n}{uloglik} \PYG{o}{=} \PYG{n}{cloglik} \PYG{o}{+} \PYG{n}{mvn}\PYG{o}{.}\PYG{n}{logpdf}\PYG{p}{(}\PYG{n}{y}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{:}\PYG{l+m+mi}{7}\PYG{p}{])}
+    \PYG{k}{return} \PYG{n}{uloglik}
+\end{Verbatim}

@@ -1,0 +1,14 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{}\PYGZsh{} Forecasting:}
+\PYG{k}{def} \PYG{n+nf}{forecastAR}\PYG{p}{(}\PYG{n}{h}\PYG{o}{=}\PYG{l+m+mi}{8}\PYG{p}{,} \PYG{n}{model} \PYG{o}{=} \PYG{n}{mods}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]):} \PYG{c+c1}{\PYGZsh{} defaults: h is the forecasting horizon, mods[0] the OLS model}
+    \PYG{n}{forecastArray} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{empty}\PYG{p}{(}\PYG{n}{h}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} Empty array to store forecasts}
+    \PYG{n}{lastrow} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{n}{INDPRO}\PYG{o}{.}\PYG{n}{tail}\PYG{p}{(}\PYG{l+m+mi}{7}\PYG{p}{))} \PYG{c+c1}{\PYGZsh{}use last 7 rows of INDPRO for the first forecast}
+    \PYG{n}{lastrow} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{flip}\PYG{p}{(}\PYG{n}{lastrow}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} invert array to align with order of estimated parameters in the model}
+    \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{h}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{):}
+        \PYG{n}{forecast} \PYG{o}{=} \PYG{n}{model}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]} \PYG{o}{+} \PYG{n}{model}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{l+m+mi}{8}\PYG{p}{]} \PYG{o}{@} \PYG{n}{lastrow} \PYG{o}{+} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{normal}\PYG{p}{(}\PYG{n}{scale}\PYG{o}{=}\PYG{n}{np}\PYG{o}{.}\PYG{n}{sqrt}\PYG{p}{(}\PYG{n}{model}\PYG{p}{[}\PYG{l+m+mi}{8}\PYG{p}{]))}\PYG{c+c1}{\PYGZsh{} mods[0] uses the OLS estimates}
+        \PYG{n}{lastrow} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{insert}\PYG{p}{(}\PYG{n}{lastrow}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{forecast}\PYG{p}{)}
+        \PYG{n}{lastrow} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{delete}\PYG{p}{(}\PYG{n}{lastrow}\PYG{p}{,} \PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{)}
+        \PYG{n}{forecastArray}\PYG{p}{[}\PYG{n}{i}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{o}{=} \PYG{n}{forecast}
+
+    \PYG{k}{return} \PYG{n}{forecastArray}
+\end{Verbatim}

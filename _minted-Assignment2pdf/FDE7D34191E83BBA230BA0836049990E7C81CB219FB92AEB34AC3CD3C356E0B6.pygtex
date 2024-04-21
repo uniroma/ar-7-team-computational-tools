@@ -1,0 +1,11 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n}{rownames} \PYG{o}{=} \PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}y\PYGZus{}\PYGZob{}t+1\PYGZcb{}\PYGZdl{}\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}y\PYGZus{}\PYGZob{}t+2\PYGZcb{}\PYGZdl{}\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}y\PYGZus{}\PYGZob{}t+3\PYGZcb{}\PYGZdl{}\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}y\PYGZus{}\PYGZob{}t+4\PYGZcb{}\PYGZdl{}\PYGZdq{}}\PYG{p}{,}
+            \PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}y\PYGZus{}\PYGZob{}t+5\PYGZcb{}\PYGZdl{}\PYGZdq{}}\PYG{p}{,}\PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}y\PYGZus{}\PYGZob{}t+6\PYGZcb{}\PYGZdl{}\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}y\PYGZus{}\PYGZob{}t+7\PYGZcb{}\PYGZdl{}\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}\PYGZdl{}y\PYGZus{}\PYGZob{}t+8\PYGZcb{}\PYGZdl{}\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{results} \PYG{o}{=} \PYG{p}{\PYGZob{}}\PYG{l+s+s1}{\PYGZsq{}Forecasts\PYGZsq{}}\PYG{p}{:} \PYG{n}{rownames}\PYG{p}{,}\PYG{l+s+s1}{\PYGZsq{}OLS\PYGZsq{}}\PYG{p}{:} \PYG{n}{forecastAR}\PYG{p}{(),} \PYG{l+s+s1}{\PYGZsq{}Model 5\PYGZsq{}}\PYG{p}{:} \PYG{n}{forecastAR}\PYG{p}{(}\PYG{n}{model} \PYG{o}{=} \PYG{n}{mods}\PYG{p}{[}\PYG{l+m+mi}{5}\PYG{p}{]),}
+           \PYG{l+s+s1}{\PYGZsq{}Model 6\PYGZsq{}}\PYG{p}{:} \PYG{n}{forecastAR}\PYG{p}{(}\PYG{n}{model} \PYG{o}{=} \PYG{n}{mods}\PYG{p}{[}\PYG{l+m+mi}{6}\PYG{p}{]),}\PYG{l+s+s1}{\PYGZsq{}Model 7\PYGZsq{}}\PYG{p}{:} \PYG{n}{forecastAR}\PYG{p}{(}\PYG{n}{model} \PYG{o}{=} \PYG{n}{mods}\PYG{p}{[}\PYG{l+m+mi}{7}\PYG{p}{]),}
+           \PYG{l+s+s1}{\PYGZsq{}Model 8\PYGZsq{}}\PYG{p}{:} \PYG{n}{forecastAR}\PYG{p}{(}\PYG{n}{model} \PYG{o}{=} \PYG{n}{mods}\PYG{p}{[}\PYG{l+m+mi}{8}\PYG{p}{])\PYGZcb{}}
+\PYG{n}{results} \PYG{o}{=} \PYG{n}{pd}\PYG{o}{.}\PYG{n}{DataFrame}\PYG{p}{(}\PYG{n}{results}\PYG{p}{)}
+
+\PYG{n}{caption}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}Forecasts using the estimated coefficients from OLS and the bounded unconditional likelihood maximization.\PYGZdq{}}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{results}\PYG{o}{.}\PYG{n}{to\PYGZus{}latex}\PYG{p}{(}\PYG{n}{index}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{,} \PYG{n}{caption}\PYG{o}{=}\PYG{n}{caption}\PYG{p}{))}
+\end{Verbatim}

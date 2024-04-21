@@ -1,0 +1,69 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZsh{} Task 4: Comparing Forecasts by plotting them}
+\PYG{c+c1}{\PYGZsh{} plotting forecasts:}
+\PYG{c+c1}{\PYGZsh{} Using the data up to 2000 as training data and the rest of the data as testing data}
+\PYG{c+c1}{\PYGZsh{} Creating a new dataframe containgin all the data up to a certain date, say for example 01/01/2020 and forecasted data from there onwards to compare}
+\PYG{c+c1}{\PYGZsh{} actual to forecasted data.}
+\PYG{n}{df} \PYG{o}{=} \PYG{n}{df}\PYG{o}{.}\PYG{n}{drop}\PYG{p}{(}\PYG{n}{index}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{)}
+\PYG{n}{df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}sasdate\PYGZsq{}}\PYG{p}{]} \PYG{o}{=} \PYG{n}{pd}\PYG{o}{.}\PYG{n}{to\PYGZus{}datetime}\PYG{p}{(}\PYG{n}{df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}sasdate\PYGZsq{}}\PYG{p}{])}
+\PYG{n}{date} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}01/01/2000\PYGZdq{}}
+\PYG{n}{lasttrain} \PYG{o}{=} \PYG{n}{df}\PYG{o}{.}\PYG{n}{index}\PYG{p}{[}\PYG{n}{df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}sasdate\PYGZsq{}}\PYG{p}{]}\PYG{o}{==} \PYG{n}{date}\PYG{p}{]}\PYG{o}{.}\PYG{n}{to\PYGZus{}list}\PYG{p}{()}
+\PYG{n}{train} \PYG{o}{=} \PYG{n}{INDPRO}\PYG{p}{[:}\PYG{n}{lasttrain}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]]}
+\PYG{n}{test} \PYG{o}{=} \PYG{n}{INDPRO}\PYG{p}{[}\PYG{n}{lasttrain}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{:]}
+
+\PYG{c+c1}{\PYGZsh{}First, OLS Model:}
+\PYG{n}{X} \PYG{o}{=} \PYG{n}{lagged\PYGZus{}matrix}\PYG{p}{(}\PYG{n}{train}\PYG{p}{,} \PYG{l+m+mi}{7}\PYG{p}{)}
+\PYG{n}{yf} \PYG{o}{=} \PYG{n}{train}\PYG{p}{[}\PYG{l+m+mi}{7}\PYG{p}{:]}
+\PYG{n}{Xf} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{hstack}\PYG{p}{((}\PYG{n}{np}\PYG{o}{.}\PYG{n}{ones}\PYG{p}{((}\PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{train}\PYG{p}{)}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{7}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{)),} \PYG{n}{X}\PYG{p}{[}\PYG{l+m+mi}{7}\PYG{p}{:,:]))}
+\PYG{n}{beta} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{linalg}\PYG{o}{.}\PYG{n}{solve}\PYG{p}{(}\PYG{n}{Xf}\PYG{o}{.}\PYG{n}{T}\PYG{n+nd}{@Xf}\PYG{p}{,} \PYG{n}{Xf}\PYG{o}{.}\PYG{n}{T}\PYG{n+nd}{@yf}\PYG{p}{)}
+\PYG{n}{sigma2\PYGZus{}hat} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{((}\PYG{n}{yf} \PYG{o}{\PYGZhy{}} \PYG{n}{Xf}\PYG{n+nd}{@beta}\PYG{p}{)}\PYG{o}{**}\PYG{l+m+mi}{2}\PYG{p}{)}
+\PYG{n}{params}\PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{hstack}\PYG{p}{((}\PYG{n}{beta}\PYG{p}{,} \PYG{n}{sigma2\PYGZus{}hat}\PYG{p}{))}
+\PYG{n}{modOLS} \PYG{o}{=} \PYG{n}{params}
+
+\PYG{c+c1}{\PYGZsh{}Second, conditional likelihood:}
+\PYG{n}{modCon} \PYG{o}{=} \PYG{n}{scipy}\PYG{o}{.}\PYG{n}{optimize}\PYG{o}{.}\PYG{n}{minimize}\PYG{p}{(}\PYG{n}{fun} \PYG{o}{=} \PYG{n}{cobj}\PYG{p}{,} \PYG{n}{x0} \PYG{o}{=}  \PYG{n}{Initial\PYGZus{}Guess}\PYG{p}{,} \PYG{n}{args} \PYG{o}{=} \PYG{n}{train}\PYG{p}{,} \PYG{n}{method}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}L\PYGZhy{}BFGS\PYGZhy{}B\PYGZsq{}}\PYG{p}{,} \PYG{n}{bounds}\PYG{o}{=}\PYG{n}{bounds}\PYG{p}{)}\PYG{o}{.}\PYG{n}{x}
+
+\PYG{c+c1}{\PYGZsh{}Third, unconditional likelihood:}
+\PYG{n}{modUCon} \PYG{o}{=} \PYG{n}{scipy}\PYG{o}{.}\PYG{n}{optimize}\PYG{o}{.}\PYG{n}{minimize}\PYG{p}{(}\PYG{n}{fun} \PYG{o}{=} \PYG{n}{uobj}\PYG{p}{,} \PYG{n}{x0} \PYG{o}{=}  \PYG{n}{Initial\PYGZus{}Guess}\PYG{p}{,} \PYG{n}{args} \PYG{o}{=} \PYG{n}{train}\PYG{p}{,} \PYG{n}{method}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}L\PYGZhy{}BFGS\PYGZhy{}B\PYGZsq{}}\PYG{p}{,} \PYG{n}{bounds}\PYG{o}{=}\PYG{n}{bounds}\PYG{p}{)}\PYG{o}{.}\PYG{n}{x}
+
+\PYG{n}{mods} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{([}\PYG{n}{modOLS}\PYG{p}{,} \PYG{n}{modCon}\PYG{p}{,} \PYG{n}{modUCon}\PYG{p}{])}
+\PYG{k}{def} \PYG{n+nf}{forecastAR}\PYG{p}{(}\PYG{n}{h}\PYG{o}{=}\PYG{l+m+mi}{8}\PYG{p}{,} \PYG{n}{model} \PYG{o}{=} \PYG{n}{mods}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{],} \PYG{n}{data}\PYG{o}{=}\PYG{n}{train}\PYG{p}{):} \PYG{c+c1}{\PYGZsh{} defaults: h is the forecasting horizon, mods[0] the OLS model}
+    \PYG{n}{forecastArray} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{empty}\PYG{p}{(}\PYG{n}{h}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} Empty array to store forecasts}
+    \PYG{n}{lastrow} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{n}{data}\PYG{o}{.}\PYG{n}{tail}\PYG{p}{(}\PYG{l+m+mi}{7}\PYG{p}{))} \PYG{c+c1}{\PYGZsh{}use last 7 rows of test data for the first forecast}
+    \PYG{n}{lastrow} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{flip}\PYG{p}{(}\PYG{n}{lastrow}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} invert array to align with order of estimated parameters in the model}
+    \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{h}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{):}
+        \PYG{n}{forecast} \PYG{o}{=} \PYG{n}{model}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]} \PYG{o}{+} \PYG{n}{model}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{l+m+mi}{8}\PYG{p}{]} \PYG{o}{@} \PYG{n}{lastrow} \PYG{o}{+} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{normal}\PYG{p}{(}\PYG{n}{scale}\PYG{o}{=}\PYG{n}{np}\PYG{o}{.}\PYG{n}{sqrt}\PYG{p}{(}\PYG{n}{model}\PYG{p}{[}\PYG{l+m+mi}{8}\PYG{p}{]))} \PYG{c+c1}{\PYGZsh{} mods[0] uses the OLS estimates}
+        \PYG{n}{lastrow} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{insert}\PYG{p}{(}\PYG{n}{lastrow}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{forecast}\PYG{p}{)}
+        \PYG{n}{lastrow} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{delete}\PYG{p}{(}\PYG{n}{lastrow}\PYG{p}{,} \PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{)}
+        \PYG{n}{forecastArray}\PYG{p}{[}\PYG{n}{i}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{o}{=} \PYG{n}{forecast}
+
+    \PYG{k}{return} \PYG{n}{forecastArray}
+
+
+\PYG{n}{h} \PYG{o}{=} \PYG{l+m+mi}{8} \PYG{c+c1}{\PYGZsh{} forecast for h periods}
+\PYG{n}{forecast}\PYG{o}{=}\PYG{p}{\PYGZob{}}\PYG{l+s+s1}{\PYGZsq{}INDPRO\PYGZsq{}}\PYG{p}{:} \PYG{n}{test}\PYG{p}{[:}\PYG{n}{h}\PYG{p}{],}
+          \PYG{l+s+s1}{\PYGZsq{}Forecast OLS\PYGZsq{}}\PYG{p}{:} \PYG{n}{forecastAR}\PYG{p}{(}\PYG{n}{h}\PYG{o}{=}\PYG{n}{h}\PYG{p}{),}
+          \PYG{l+s+s1}{\PYGZsq{}Forecast Conditional\PYGZsq{}}\PYG{p}{:} \PYG{n}{forecastAR}\PYG{p}{(}\PYG{n}{h}\PYG{o}{=}\PYG{n}{h}\PYG{p}{,} \PYG{n}{model} \PYG{o}{=} \PYG{n}{mods}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]),}
+          \PYG{l+s+s1}{\PYGZsq{}Forecast Unconditional\PYGZsq{}}\PYG{p}{:} \PYG{n}{forecastAR}\PYG{p}{(}\PYG{n}{h}\PYG{o}{=}\PYG{n}{h}\PYG{p}{,} \PYG{n}{model} \PYG{o}{=} \PYG{n}{mods}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{])\PYGZcb{}}
+
+\PYG{n}{forecast} \PYG{o}{=} \PYG{n}{pd}\PYG{o}{.}\PYG{n}{DataFrame}\PYG{p}{(}\PYG{n}{forecast}\PYG{p}{)}
+
+\PYG{n}{plotdata} \PYG{o}{=} \PYG{p}{\PYGZob{}}\PYG{l+s+s1}{\PYGZsq{}INDPRO\PYGZsq{}}\PYG{p}{:} \PYG{n}{train}\PYG{p}{,}
+            \PYG{l+s+s1}{\PYGZsq{}Forecast OLS\PYGZsq{}}\PYG{p}{:} \PYG{n}{train}\PYG{p}{,}
+            \PYG{l+s+s1}{\PYGZsq{}Forecast Conditional\PYGZsq{}}\PYG{p}{:} \PYG{n}{train}\PYG{p}{,}
+            \PYG{l+s+s1}{\PYGZsq{}Forecast Unconditional\PYGZsq{}}\PYG{p}{:} \PYG{n}{train}\PYG{p}{\PYGZcb{}}
+
+\PYG{n}{plotdata} \PYG{o}{=} \PYG{n}{pd}\PYG{o}{.}\PYG{n}{DataFrame}\PYG{p}{(}\PYG{n}{plotdata}\PYG{p}{)}
+\PYG{n}{plotdata} \PYG{o}{=}  \PYG{p}{[}\PYG{n}{plotdata}\PYG{p}{,} \PYG{n}{forecast}\PYG{p}{]}
+\PYG{n}{plotdata} \PYG{o}{=} \PYG{n}{pd}\PYG{o}{.}\PYG{n}{concat}\PYG{p}{(}\PYG{n}{plotdata}\PYG{p}{)}
+\PYG{n}{plotdata}\PYG{o}{.}\PYG{n}{insert}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}sasdate\PYGZdq{}}\PYG{p}{,}\PYG{n}{df}\PYG{o}{.}\PYG{n}{iloc}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{plotdata}\PYG{p}{)}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{,}\PYG{l+m+mi}{0}\PYG{p}{])}
+\PYG{n}{plotdata} \PYG{o}{=} \PYG{n}{plotdata}\PYG{o}{.}\PYG{n}{tail}\PYG{p}{(}\PYG{l+m+mi}{2}\PYG{o}{*}\PYG{n}{h}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} seletct the h forecasted observations and the h previous observations for plotting.}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{plotdata}\PYG{p}{)}
+
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{plotdata}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}sasdate\PYGZsq{}}\PYG{p}{],} \PYG{n}{plotdata}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}Forecast OLS\PYGZsq{}}\PYG{p}{],} \PYG{n}{color} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}blue\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{plotdata}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}sasdate\PYGZsq{}}\PYG{p}{],} \PYG{n}{plotdata}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}Forecast Conditional\PYGZsq{}}\PYG{p}{],} \PYG{n}{color} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}green\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{plotdata}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}sasdate\PYGZsq{}}\PYG{p}{],} \PYG{n}{plotdata}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}Forecast Unconditional\PYGZsq{}}\PYG{p}{],} \PYG{n}{color} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}red\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{plotdata}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}sasdate\PYGZsq{}}\PYG{p}{],} \PYG{n}{plotdata}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}INDPRO\PYGZsq{}}\PYG{p}{],}\PYG{n}{color}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}black\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{legend}\PYG{p}{([}\PYG{l+s+s1}{\PYGZsq{}Forecast OLS\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}Forecast Conditional\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}Forecast Unconditional\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}INDPRO\PYGZsq{}}\PYG{p}{])}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{show}\PYG{p}{()}
+\end{Verbatim}

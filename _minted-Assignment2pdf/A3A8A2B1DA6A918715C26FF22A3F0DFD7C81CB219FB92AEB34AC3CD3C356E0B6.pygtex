@@ -1,0 +1,29 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k}{def} \PYG{n+nf}{unconditional\PYGZus{}ar\PYGZus{}mean\PYGZus{}variance}\PYG{p}{(}\PYG{n}{c}\PYG{p}{,} \PYG{n}{phis}\PYG{p}{,} \PYG{n}{sigma2}\PYG{p}{):}
+    \PYG{c+c1}{\PYGZsh{}\PYGZsh{} The length of phis is p}
+    \PYG{n}{p} \PYG{o}{=} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{phis}\PYG{p}{)}
+    \PYG{n}{A} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{zeros}\PYG{p}{((}\PYG{n}{p}\PYG{p}{,} \PYG{n}{p}\PYG{p}{))}
+    \PYG{n}{A}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{p}{:]} \PYG{o}{=} \PYG{n}{phis}
+    \PYG{n}{A}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{:,} \PYG{l+m+mi}{0}\PYG{p}{:(}\PYG{n}{p}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{)]} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{eye}\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{)}
+    \PYG{c+c1}{\PYGZsh{}\PYGZsh{} Check for stationarity}
+    \PYG{n}{eigA} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{linalg}\PYG{o}{.}\PYG{n}{eig}\PYG{p}{(}\PYG{n}{A}\PYG{p}{)}
+    \PYG{k}{if} \PYG{n+nb}{all}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{abs}\PYG{p}{(}\PYG{n}{eigA}\PYG{o}{.}\PYG{n}{eigenvalues}\PYG{p}{)}\PYG{o}{\PYGZlt{}}\PYG{l+m+mi}{1}\PYG{p}{):}
+        \PYG{n}{stationary} \PYG{o}{=} \PYG{k+kc}{True}
+    \PYG{k}{else}\PYG{p}{:}
+        \PYG{n}{stationary} \PYG{o}{=} \PYG{k+kc}{False}
+    \PYG{c+c1}{\PYGZsh{} Create the vector b}
+    \PYG{n}{b} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{zeros}\PYG{p}{((}\PYG{n}{p}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{))}
+    \PYG{n}{b}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{]} \PYG{o}{=} \PYG{n}{c}
+
+    \PYG{c+c1}{\PYGZsh{} Compute the mean using matrix algebra}
+    \PYG{n}{I} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{eye}\PYG{p}{(}\PYG{n}{p}\PYG{p}{)}
+    \PYG{n}{mu} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{linalg}\PYG{o}{.}\PYG{n}{inv}\PYG{p}{(}\PYG{n}{I} \PYG{o}{\PYGZhy{}} \PYG{n}{A}\PYG{p}{)} \PYG{o}{@} \PYG{n}{b}
+
+    \PYG{c+c1}{\PYGZsh{} Solve the discrete Lyapunov equation}
+    \PYG{n}{Q} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{zeros}\PYG{p}{((}\PYG{n}{p}\PYG{p}{,} \PYG{n}{p}\PYG{p}{))}
+    \PYG{n}{Q}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{]} \PYG{o}{=} \PYG{n}{sigma2}
+    \PYG{c+c1}{\PYGZsh{}Sigma = np.linalg.solve(I \PYGZhy{} np.kron(A, A), Q.flatten()).reshape(7, 7)}
+    \PYG{n}{Sigma} \PYG{o}{=} \PYG{n}{scipy}\PYG{o}{.}\PYG{n}{linalg}\PYG{o}{.}\PYG{n}{solve\PYGZus{}discrete\PYGZus{}lyapunov}\PYG{p}{(}\PYG{n}{A}\PYG{p}{,} \PYG{n}{Q}\PYG{p}{)}
+
+    \PYG{k}{return} \PYG{n}{mu}\PYG{o}{.}\PYG{n}{ravel}\PYG{p}{(),} \PYG{n}{Sigma}\PYG{p}{,} \PYG{n}{stationary}
+\end{Verbatim}

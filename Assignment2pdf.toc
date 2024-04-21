@@ -1,0 +1,18 @@
+\contentsline {section}{\numberline {1}Conditional Likelihood}{1}{}%
+\contentsline {subsection}{\numberline {1.1}Theoretical Outline}{1}{}%
+\contentsline {subsection}{\numberline {1.2}Implementation in Python}{2}{}%
+\contentsline {section}{\numberline {2}Unconditional Likelihood}{2}{}%
+\contentsline {subsection}{\numberline {2.1}Theoretical Outline}{2}{}%
+\contentsline {subsection}{\numberline {2.2}Implementation in Python}{3}{}%
+\contentsline {section}{\numberline {3}Maximum Likelihood Estimation for \texttt {INDPRO}}{4}{}%
+\contentsline {subsection}{\numberline {3.1}Results: Conditional Likelihood}{6}{}%
+\contentsline {subsubsection}{\numberline {3.1.1}Unconstrained Maximization}{6}{}%
+\contentsline {subsubsection}{\numberline {3.1.2}Constrained Maximization}{7}{}%
+\contentsline {subsection}{\numberline {3.2}Results: Unconditional Likelihood}{8}{}%
+\contentsline {subsubsection}{\numberline {3.2.1}Unconstrained Maximization}{8}{}%
+\contentsline {subsubsection}{\numberline {3.2.2}Constrained Maximization}{9}{}%
+\contentsline {section}{\numberline {4}Forecast}{9}{}%
+\contentsline {subsection}{\numberline {4.1}Forecast: Conditional Likelihood}{10}{}%
+\contentsline {subsection}{\numberline {4.2}Forecast: Unconditional Likelihood}{10}{}%
+\contentsline {subsection}{\numberline {4.3}Comparing Forecasts}{11}{}%
+\contentsline {subsection}{\numberline {4.4}Testing Forecasts}{11}{}%
